@@ -1,0 +1,6874 @@
+<html>
+<title>my webpage</title>
+<head>
+<style>
+div{text-align: center;}
+
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Sofia">
+<link rel="stylesheet" type = "text/css" href="{{ url_for('static', filename='styles.css') }}" >
+
+<style>
+body {
+  background-image: url('static/movies.png');
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+}
+</style>
+
+</head>
+<body>
+
+
+
+<div><p>
+Movie__Recommender
+</p></div>
+
+
+<form action = "/submit" method='post'  id="my-form">
+   <label for="mv_name">Enter your movie:</label>
+  <div class="autocomplete">
+    <input id="myInput" type="text" placeholder="enter movie" id="mv_name" name="mv_name">
+  </div>
+  <label for="rating">Enter your rating:</label>
+  <input type="number" id="R" name="R" min="1" max="5" placeholder="enter rating">
+        
+</form>
+
+<p><button type="submit" form = "my-form" onclick="this.classList.toggle('button--loading')">
+    <span class="button__text"></span>Submit</button></p>
+
+<script>
+function autocomplete(inp, arr) {
+  /*the autocomplete function takes two arguments,
+  the text field element and an array of possible autocompleted values:*/
+  var currentFocus;
+  /*execute a function when someone writes in the text field:*/
+  inp.addEventListener("input", function(e) {
+      var a, b, i, val = this.value;
+      /*close any already open lists of autocompleted values*/
+      closeAllLists();
+      if (!val) { return false;}
+      currentFocus = -1;
+      /*create a DIV element that will contain the items (values):*/
+      a = document.createElement("DIV");
+      a.setAttribute("id", this.id + "autocomplete-list");
+      a.setAttribute("class", "autocomplete-items");
+      /*append the DIV element as a child of the autocomplete container:*/
+      this.parentNode.appendChild(a);
+      /*for each item in the array...*/
+      for (i = 0; i < arr.length; i++) {
+        /*check if the item starts with the same letters as the text field value:*/
+        if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
+          /*create a DIV element for each matching element:*/
+          b = document.createElement("DIV");
+          /*make the matching letters bold:*/
+          b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
+          b.innerHTML += arr[i].substr(val.length);
+          /*insert a input field that will hold the current array item's value:*/
+          b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
+          /*execute a function when someone clicks on the item value (DIV element):*/
+          b.addEventListener("click", function(e) {
+              /*insert the value for the autocomplete text field:*/
+              inp.value = this.getElementsByTagName("input")[0].value;
+              /*close the list of autocompleted values,
+              (or any other open lists of autocompleted values:*/
+              closeAllLists();
+          });
+          a.appendChild(b);
+        }
+      }
+  });
+  /*execute a function presses a key on the keyboard:*/
+  inp.addEventListener("keydown", function(e) {
+      var x = document.getElementById(this.id + "autocomplete-list");
+      if (x) x = x.getElementsByTagName("div");
+      if (e.keyCode == 40) {
+        /*If the arrow DOWN key is pressed,
+        increase the currentFocus variable:*/
+        currentFocus++;
+        /*and and make the current item more visible:*/
+        addActive(x);
+      } else if (e.keyCode == 38) { //up
+        /*If the arrow UP key is pressed,
+        decrease the currentFocus variable:*/
+        currentFocus--;
+        /*and and make the current item more visible:*/
+        addActive(x);
+      } else if (e.keyCode == 13) {
+        /*If the ENTER key is pressed, prevent the form from being submitted,*/
+        e.preventDefault();
+        if (currentFocus > -1) {
+          /*and simulate a click on the "active" item:*/
+          if (x) x[currentFocus].click();
+        }
+      }
+  });
+  function addActive(x) {
+    /*a function to classify an item as "active":*/
+    if (!x) return false;
+    /*start by removing the "active" class on all items:*/
+    removeActive(x);
+    if (currentFocus >= x.length) currentFocus = 0;
+    if (currentFocus < 0) currentFocus = (x.length - 1);
+    /*add class "autocomplete-active":*/
+    x[currentFocus].classList.add("autocomplete-active");
+  }
+  function removeActive(x) {
+    /*a function to remove the "active" class from all autocomplete items:*/
+    for (var i = 0; i < x.length; i++) {
+      x[i].classList.remove("autocomplete-active");
+    }
+  }
+  function closeAllLists(elmnt) {
+    /*close all autocomplete lists in the document,
+    except the one passed as an argument:*/
+    var x = document.getElementsByClassName("autocomplete-items");
+    for (var i = 0; i < x.length; i++) {
+      if (elmnt != x[i] && elmnt != inp) {
+        x[i].parentNode.removeChild(x[i]);
+      }
+    }
+  }
+  /*execute a function when someone clicks in the document:*/
+  document.addEventListener("click", function (e) {
+      closeAllLists(e.target);
+  });
+}
+
+/*An array containing all the country names in the world:*/
+var countries = [
+"Abbott and Costello Meet Frankenstein (1948)",
+"Abominable Snowman, The (Abominable Snowman of the Himalayas, The) (1957)",
+"About Adam (2000)",
+"About Last Night... (1986)",
+"Above the Rim (1994)",
+"Absent-Minded Professor, The (1961)",
+"Absolute Power (1997)",
+"Abyss, The (1989)",
+"Ace in the Hole (Big Carnival, The) (1951)",
+"Ace Ventura: Pet Detective (1994)",
+"Ace Ventura: When Nature Calls (1995)",
+"Aces: Iron Eagle III (1992)",
+"Acid House, The (1998)",
+"Action Jackson (1988)",
+"Addams Family Values (1993)",
+"Addams Family, The (1991)",
+"Addicted to Love (1997)",
+"Addiction, The (1995)",
+"Adventures in Babysitting (1987)",
+"Adventures of Buckaroo Banzai Across the 8th Dimension, The (1984)",
+"Adventures of Elmo in Grouchland, The (1999)",
+"Adventures of Ichabod and Mr. Toad, The (1949)",
+"Adventures of Milo and Otis, The (Koneko monogatari) (1986)",
+"Adventures of Pinocchio, The (1996)",
+"Adventures of Priscilla, Queen of the Desert, The (1994)",
+"Adventures of Robin Hood, The (1938)",
+"Adventures of Rocky and Bullwinkle, The (2000)",
+"Adventures of Sebastian Cole, The (1998)",
+"Affair of Love, An (Liaison pornographique, Une) (1999)",
+"Affair to Remember, An (1957)",
+"Affliction (1997)",
+"African Queen, The (1951)",
+"After Life (Wandafuru raifu) (1998)",
+"Afterglow (1997)",
+"Against All Odds (1984)",
+"Age of Innocence, The (1993)",
+"Agnes of God (1985)",
+"Air America (1990)",
+"Air Bud (1997)",
+"Air Bud: Golden Receiver (1998)",
+"Air Force One (1997)",
+"Air Up There, The (1994)",
+"Airheads (1994)",
+"Airplane II: The Sequel (1982)",
+"Airplane! (1980)",
+"Airport (1970)",
+"Airport 1975 (1974)",
+"Airport '77 (1977)",
+"Akira (1988)",
+"Aladdin (1992)",
+"Aladdin and the King of Thieves (1996)",
+"Alaska (1996)",
+"Albino Alligator (1996)",
+"Alice in Wonderland (1951)",
+"Alien (1979)",
+"Alien Nation (1988)",
+"Alien: Resurrection (1997)",
+"AlienÂ³ (a.k.a. Alien 3) (1992)",
+"Aliens (1986)",
+"Alive (1993)",
+"All About Eve (1950)",
+"All About My Mother (Todo sobre mi madre) (1999)",
+"All Dogs Go to Heaven (1989)",
+"All Dogs Go to Heaven 2 (1996)",
+"All Quiet on the Western Front (1930)",
+"All That Jazz (1979)",
+"All the King's Men (1949)",
+"All the Vermeers in New York (1990)",
+"Allan Quatermain and the Lost City of Gold (1987)",
+"Alligator (1980)",
+"Allnighter, The (1987)",
+"Almost Famous (2000)",
+"Almost Heroes (1998)",
+"Alphaville (Alphaville, une Ã©trange aventure de Lemmy Caution) (1965)",
+"Alvarez Kelly (1966)",
+"Amadeus (1984)",
+"Amateur (1994)",
+"Amazing Panda Adventure, The (1995)",
+"American Beauty (1999)",
+"American Buffalo (1996)",
+"American Flyers (1985)",
+"American Gigolo (1980)",
+"American Graffiti (1973)",
+"American History X (1998)",
+"American in Paris, An (1951)",
+"American Movie (1999)",
+"American Pie (1999)",
+"American Pop (1981)",
+"American President, The (1995)",
+"American Psycho (2000)",
+"American Tail, An (1986)",
+"American Tail: Fievel Goes West, An (1991)",
+"American Werewolf in London, An (1981)",
+"American Werewolf in Paris, An (1997)",
+"Amistad (1997)",
+"Amityville 1992: It's About Time (1992)",
+"Amityville 3-D (1983)",
+"Amityville Curse, The (1990)",
+"Amityville Horror, The (1979)",
+"Amityville II: The Possession (1982)",
+"Amityville: A New Generation (1993)",
+"Amityville: Dollhouse (1996)",
+"Amos & Andrew (1993)",
+"Anaconda (1997)",
+"Analyze This (1999)",
+"Anastasia (1997)",
+"Anatomy of a Murder (1959)",
+"Anchors Aweigh (1945)",
+"And God Created Woman (Et Dieu... crÃ©a la femme) (1956)",
+"And the Band Played On (1993)",
+"And the Ship Sails On (E la nave va) (1983)",
+"Andre (1994)",
+"Angel Baby (1995)",
+"Angel Heart (1987)",
+"Angela's Ashes (1999)",
+"Angels and Insects (1995)",
+"Angels in the Outfield (1994)",
+"Angus (1995)",
+"Animal House (1978)",
+"Anna and the King (1999)",
+"Anna Karenina (1997)",
+"Anne Frank Remembered (1995)",
+"Annie Hall (1977)",
+"Another Stakeout (1993)",
+"Antonia's Line (Antonia) (1995)",
+"Antz (1998)",
+"Any Given Sunday (1999)",
+"Anywhere But Here (1999)",
+"Apartment, The (1960)",
+"Apocalypse Now (1979)",
+"Apollo 13 (1995)",
+"Apostle, The (1997)",
+"Apple Dumpling Gang Rides Again, The (1979)",
+"Apple Dumpling Gang, The (1975)",
+"Apple, The (Sib) (1998)",
+"April Fool's Day (1986)",
+"Apt Pupil (1998)",
+"Arachnophobia (1990)",
+"Aristocats, The (1970)",
+"Arlington Road (1999)",
+"Armageddon (1998)",
+"Armed and Dangerous (1986)",
+"Armour of God (Long xiong hu di) (1987)",
+"Armour of God II: Operation Condor (Operation Condor) (Fei ying gai wak) (1991)",
+"Army of Darkness (1993)",
+"Around the World in 80 Days (1956)",
+"Arrival, The (1996)",
+"Arsenic and Old Lace (1944)",
+"Art of War, The (2000)",
+"Artemisia (1997)",
+"Arthur (1981)",
+"As Good as It Gets (1997)",
+"Ashes of Time (Dung che sai duk) (1994)",
+"Asphalt Jungle, The (1950)",
+"Assassination (1987)",
+"Assassins (1995)",
+"Assault on Precinct 13 (1976)",
+"Assignment, The (1997)",
+"Astronaut's Wife, The (1999)",
+"At First Sight (1999)",
+"Atlantic City (1980)",
+"Attack of the Killer Tomatoes! (1978)",
+"Audrey Rose (1977)",
+"Auntie Mame (1958)",
+"Austin Powers: International Man of Mystery (1997)",
+"Austin Powers: The Spy Who Shagged Me (1999)",
+"Autumn in New York (2000)",
+"Autumn Sonata (HÃ¶stsonaten) (1978)",
+"Autumn Tale, An (Conte d'automne) (1998)",
+"Avalanche (1978)",
+"Avengers, The (1998)",
+"Awakenings (1990)",
+"Awfully Big Adventure, An (1995)",
+"B*A*P*S (1997)",
+"B. Monkey (1998)",
+"Babe (1995)",
+"Babe: Pig in the City (1998)",
+"Babes in Toyland (1934)",
+"Babes in Toyland (1961)",
+"Baby Geniuses (1999)",
+"Baby, The (1973)",
+"Baby... Secret of the Lost Legend (1985)",
+"Babysitter, The (1995)",
+"Baby-Sitters Club, The (1995)",
+"Bachelor Party (1984)",
+"Bachelor, The (1999)",
+"Back to School (1986)",
+"Back to the Future (1985)",
+"Back to the Future Part II (1989)",
+"Back to the Future Part III (1990)",
+"Backbeat (1993)",
+"Backdraft (1991)",
+"Bad Boys (1995)",
+"Bad Company (1995)",
+"Bad Girls (1994)",
+"Bad Lieutenant (1992)",
+"Bad Seed, The (1956)",
+"Bad Taste (1987)",
+"Badlands (1973)",
+"Bait (2000)",
+"Ballad of Narayama, The (Narayama bushiko) (1983)",
+"Balto (1995)",
+"Bamba, La (1987)",
+"Bambi (1942)",
+"Bamboozled (2000)",
+"Bananas (1971)",
+"Band of the Hand (1986)",
+"Band Wagon, The (1953)",
+"Bank Dick, The (1940)",
+"Baraka (1992)",
+"Barb Wire (1996)",
+"Barbarella (1968)",
+"Barcelona (1994)",
+"Barefoot Executive, The (1971)",
+"Barefoot in the Park (1967)",
+"Barney's Great Adventure (1998)",
+"Barry Lyndon (1975)",
+"BASEketball (1998)",
+"Basic Instinct (1992)",
+"Basketball Diaries, The (1995)",
+"Basquiat (1996)",
+"Bastard Out of Carolina (1996)",
+"Batman & Robin (1997)",
+"Batman (1989)",
+"Batman Forever (1995)",
+"Batman Returns (1992)",
+"Batman: Mask of the Phantasm (1993)",
+"Bats (1999)",
+"Battle for the Planet of the Apes (1973)",
+"Battlefield Earth (2000)",
+"Battleship Potemkin (1925)",
+"Beach, The (2000)",
+"Bean (1997)",
+"Bear, The (Ours, L') (1988)",
+"Beat the Devil (1953)",
+"Beautician and the Beast, The (1997)",
+"Beautiful (2000)",
+"Beautiful Girls (1996)",
+"Beautiful People (1999)",
+"Beautiful Thing (1996)",
+"Beauty and the Beast (1991)",
+"Beauty of the Day (Belle de jour) (1967)",
+"Beavis and Butt-Head Do America (1996)",
+"Bed of Roses (1996)",
+"Bedazzled (2000)",
+"Bedknobs and Broomsticks (1971)",
+"Bedrooms & Hallways (1998)",
+"Beetlejuice (1988)",
+"Before and After (1996)",
+"Before Sunrise (1995)",
+"Before the Rain (Pred dozhdot) (1994)",
+"Being Human (1993)",
+"Being John Malkovich (1999)",
+"Being There (1979)",
+"Believers, The (1987)",
+"Bell, Book and Candle (1958)",
+"Belly (1998)",
+"Beloved (1998)",
+"Beneath the Planet of the Apes (1970)",
+"Ben-Hur (1959)",
+"Benji (1974)",
+"Benji the Hunted (1987)",
+"Benny & Joon (1993)",
+"Bent (1997)",
+"Besieged (a.k.a. L' Assedio) (1998)",
+"Best in Show (2000)",
+"Best Man, The (1999)",
+"Best Man, The (Testimone dello sposo, Il) (1998)",
+"Best Men (1997)",
+"Best of the Best 3: No Turning Back (1995)",
+"Best Years of Our Lives, The (1946)",
+"Betrayed (1988)",
+"Better Living Through Circuitry (1999)",
+"Better Off Dead... (1985)",
+"Better Than Chocolate (1999)",
+"Beverly Hillbillies, The (1993)",
+"Beverly Hills Cop III (1994)",
+"Beverly Hills Ninja (1997)",
+"Beyond Bedlam (1993)",
+"Beyond Rangoon (1995)",
+"Beyond Silence (Jenseits der Stille) (1996)",
+"Beyond the Mat (1999)",
+"Beyond the Poseidon Adventure (1979)",
+"Bhaji on the Beach (1993)",
+"Bicentennial Man (1999)",
+"Bicycle Thieves (a.k.a. The Bicycle Thief) (a.k.a. The Bicycle Thieves) (Ladri di biciclette) (1948)",
+"Big (1988)",
+"Big Blue, The (Grand bleu, Le) (1988)",
+"Big Bully (1996)",
+"Big Chill, The (1983)",
+"Big Country, The (1958)",
+"Big Daddy (1999)",
+"Big Green, The (1995)",
+"Big Hit, The (1998)",
+"Big Kahuna, The (2000)",
+"Big Lebowski, The (1998)",
+"Big Momma's House (2000)",
+"Big Night (1996)",
+"Big One, The (1997)",
+"Big Sleep, The (1946)",
+"Big Tease, The (1999)",
+"Big Trouble in Little China (1986)",
+"Bikini Beach (1964)",
+"Billy Elliot (2000)",
+"Billy Jack (1971)",
+"Billy Jack Goes to Washington (1977)",
+"Billy Madison (1995)",
+"Bio-Dome (1996)",
+"Bird on a Wire (1990)",
+"Birdcage, The (1996)",
+"Birds, The (1963)",
+"Birdy (1984)",
+"Bitter Moon (1992)",
+"Black Beauty (1994)",
+"Black Cat, White Cat (Crna macka, beli macor) (1998)",
+"Black Cauldron, The (1985)",
+"Black Hole, The (1979)",
+"Black Mask (Hak hap) (1996)",
+"Black Sabbath (Tre volti della paura, I) (1963)",
+"Black Sheep (1996)",
+"Black Tar Heroin: The Dark End of the Street (2000)",
+"Blackbeard's Ghost (1968)",
+"Blade (1998)",
+"Blade Runner (1982)",
+"Blair Witch Project, The (1999)",
+"Blame It on Rio (1984)",
+"Blank Check (1994)",
+"Blast from the Past (1999)",
+"Blazing Saddles (1974)",
+"Bless the Child (2000)",
+"Blind Date (1987)",
+"Blink (1994)",
+"Bliss (1997)",
+"Blob, The (1958)",
+"Blood and Wine (Blood & Wine) (1996)",
+"Blood Beach (1981)",
+"Blood Feast (1963)",
+"Blood for Dracula (Andy Warhol's Dracula) (1974)",
+"Blood In, Blood Out (1993)",
+"Blood Simple (1984)",
+"Bloodsport (1988)",
+"Bloodsport 2 (a.k.a. Bloodsport II: The Next Kumite) (1996)",
+"Blown Away (1994)",
+"Blow-Out (La grande bouffe) (1973)",
+"Blow-Up (Blowup) (1966)",
+"Blue Chips (1994)",
+"Blue in the Face (1995)",
+"Blue Juice (1995)",
+"Blue Lagoon, The (1980)",
+"Blue Sky (1994)",
+"Blue Streak (1999)",
+"Blue Velvet (1986)",
+"Blues Brothers 2000 (1998)",
+"Blues Brothers, The (1980)",
+"Bob Roberts (1992)",
+"Body Heat (1981)",
+"Body Parts (1991)",
+"Body Shots (1999)",
+"Body Snatcher, The (1945)",
+"Body Snatchers (1993)",
+"Bodyguard, The (1992)",
+"Bogus (1996)",
+"Boiler Room (2000)",
+"Boiling Point (1993)",
+"Bone Collector, The (1999)",
+"Bonfire of the Vanities (1990)",
+"Bonnie and Clyde (1967)",
+"Boogie Nights (1997)",
+"Book of Shadows: Blair Witch 2 (2000)",
+"Boomerang (1992)",
+"Boondock Saints, The (2000)",
+"Boot, Das (Boat, The) (1981)",
+"Booty Call (1997)",
+"Born on the Fourth of July (1989)",
+"Born Yesterday (1950)",
+"Borrowers, The (1997)",
+"Bossa Nova (2000)",
+"Bottle Rocket (1996)",
+"Bounce (2000)",
+"Bound (1996)",
+"Bounty, The (1984)",
+"Bowfinger (1999)",
+"Boxing Helena (1993)",
+"Boy Who Could Fly, The (1986)",
+"Boys (1996)",
+"Boys and Girls (2000)",
+"Boys Don't Cry (1999)",
+"Boys from Brazil, The (1978)",
+"Boys Life (1995)",
+"Boys of St. Vincent, The (1992)",
+"Boys on the Side (1995)",
+"Boys, The (1998)",
+"Braddock: Missing in Action III (1988)",
+"Brady Bunch Movie, The (1995)",
+"Brain That Wouldn't Die, The (1962)",
+"Brandon Teena Story, The (1998)",
+"Brassed Off (1996)",
+"Braveheart (1995)",
+"Brazil (1985)",
+"Bread and Chocolate (Pane e cioccolata) (1973)",
+"Breakdown (1997)",
+"Breaker Morant (1980)",
+"Breakfast at Tiffany's (1961)",
+"Breakfast Club, The (1985)",
+"Breaking Away (1979)",
+"Breaking the Waves (1996)",
+"Breathless (1983)",
+"Brewster's Millions (1985)",
+"Bride of Chucky (Child's Play 4) (1998)",
+"Bride of Frankenstein, The (Bride of Frankenstein) (1935)",
+"Bride of Re-Animator (1990)",
+"Bridge at Remagen, The (1969)",
+"Bridge on the River Kwai, The (1957)",
+"Bridges of Madison County, The (1995)",
+"Brief Encounter (1946)",
+"Brighton Beach Memoirs (1986)",
+"Bring It On (2000)",
+"Bringing Out the Dead (1999)",
+"Bringing Up Baby (1938)",
+"Broadcast News (1987)",
+"Broadway Melody, The (1929)",
+"Brokedown Palace (1999)",
+"Broken Arrow (1996)",
+"Broken English (1996)",
+"Broken Hearts Club, The (2000)",
+"Bronco Billy (1980)",
+"Bronx Tale, A (1993)",
+"Brother from Another Planet, The (1984)",
+"Brothers McMullen, The (1995)",
+"Browning Version, The (1994)",
+"Buddy (1997)",
+"Buddy Boy (1999)",
+"Buddy Holly Story, The (1978)",
+"Buena Vista Social Club (1999)",
+"Buffalo '66 (a.k.a. Buffalo 66) (1998)",
+"Buffy the Vampire Slayer (1992)",
+"Bug's Life, A (1998)",
+"Bull Durham (1988)",
+"Bulletproof (1996)",
+"Bullets Over Broadway (1994)",
+"Bulworth (1998)",
+"'burbs, The (1989)",
+"Burglar (1987)",
+"Burnt by the Sun (Utomlyonnye solntsem) (1994)",
+"Burnt Offerings (1976)",
+"Bushwhacked (1995)",
+"Bustin' Loose (1981)",
+"But I'm a Cheerleader (1999)",
+"Butch Cassidy and the Sundance Kid (1969)",
+"Butcher Boy, The (1997)",
+"Butcher's Wife, The (1991)",
+"Butterfly (La lengua de las mariposas) (1999)",
+"Cabaret (1972)",
+"Cabin Boy (1994)",
+"Cable Guy, The (1996)",
+"Caddyshack (1980)",
+"Calendar Girl (1993)",
+"Caligula (1979)",
+"Canadian Bacon (1995)",
+"Candidate, The (1972)",
+"Candleshoe (1977)",
+"Candyman (1992)",
+"Candyman: Farewell to the Flesh (1995)",
+"Can't Hardly Wait (1998)",
+"Cape Fear (1962)",
+"Cape Fear (1991)",
+"Captain Horatio Hornblower R.N. (1951)",
+"Career Girls (1997)",
+"Carlito's Way (1993)",
+"Carnal Knowledge (1971)",
+"Carnival of Souls (1962)",
+"Carnosaur (1993)",
+"Carnosaur 2 (1995)",
+"Carnosaur 3: Primal Species (1996)",
+"Carpool (1996)",
+"Carrie (1976)",
+"Casablanca (1942)",
+"Casino (1995)",
+"Casper (1995)",
+"Castle Freak (1995)",
+"Castle, The (1997)",
+"Cat Ballou (1965)",
+"Cat from Outer Space, The (1978)",
+"Cat on a Hot Tin Roof (1958)",
+"Cat People (1982)",
+"Cats Don't Dance (1997)",
+"Cat's Eye (1985)",
+"Catwalk (1996)",
+"Cecil B. DeMented (2000)",
+"Celebration, The (Festen) (1998)",
+"Celebrity (1998)",
+"Cell, The (2000)",
+"Celluloid Closet, The (1995)",
+"Celtic Pride (1996)",
+"Cement Garden, The (1993)",
+"Cemetery Man (Dellamorte Dellamore) (1994)",
+"Center Stage (2000)",
+"Central Station (Central do Brasil) (1998)",
+"Chain of Fools (2000)",
+"Chain Reaction (1996)",
+"Chairman of the Board (1998)",
+"Chamber, The (1996)",
+"Champ, The (1979)",
+"Character (Karakter) (1997)",
+"Charade (1963)",
+"Chariots of Fire (1981)",
+"Charlie, the Lonesome Cougar (1967)",
+"Charlie's Angels (2000)",
+"Charlotte's Web (1973)",
+"Chasers (1994)",
+"Chasing Amy (1997)",
+"Cheech and Chong's Up in Smoke (1978)",
+"Chicken Run (2000)",
+"Children Are Watching Us, The (Bambini ci guardano, I) (1944)",
+"Children of a Lesser God (1986)",
+"Children of Heaven, The (Bacheha-Ye Aseman) (1997)",
+"Children of the Corn (1984)",
+"Children of the Corn II: The Final Sacrifice (1993)",
+"Children of the Corn III (1994)",
+"Children of the Corn IV: The Gathering (1996)",
+"Children of the Damned (1963)",
+"Children of the Revolution (1996)",
+"Child's Play (1988)",
+"Child's Play 2 (1990)",
+"Child's Play 3 (1991)",
+"Chill Factor (1999)",
+"Chinatown (1974)",
+"Chinese Box (1997)",
+"Chopping Mall (a.k.a. Killbots) (1986)",
+"Christine (1983)",
+"Christmas Carol, A (1938)",
+"Christmas Story, A (1983)",
+"Christmas Vacation (National Lampoon's Christmas Vacation) (1989)",
+"Chuck & Buck (2000)",
+"Chungking Express (Chung Hing sam lam) (1994)",
+"Ciao, Professore! (Io speriamo che me la cavo) (1992)",
+"Cider House Rules, The (1999)",
+"Cimarron (1931)",
+"Cinderella (1950)",
+"Cinema Paradiso (Nuovo cinema Paradiso) (1989)",
+"Circle of Friends (1995)",
+"Circus (2000)",
+"Circus, The (1928)",
+"Citizen Kane (1941)",
+"Citizen Ruth (1996)",
+"City Hall (1996)",
+"City Lights (1931)",
+"City of Angels (1998)",
+"City of Lost Children, The (CitÃ© des enfants perdus, La) (1995)",
+"City of the Living Dead (a.k.a. Gates of Hell, The) (Paura nella cittÃ  dei morti viventi) (1980)",
+"City Slickers II: The Legend of Curly's Gold (1994)",
+"Civil Action, A (1998)",
+"Clan of the Cave Bear, The (1986)",
+"Clara's Heart (1988)",
+"Class (1983)",
+"Class of Nuke 'Em High (1986)",
+"Class Reunion (1982)",
+"Clay Pigeons (1998)",
+"Clean Slate (1994)",
+"Clear and Present Danger (1994)",
+"Clerks (1994)",
+"Client, The (1994)",
+"Cliffhanger (1993)",
+"Clockers (1995)",
+"Clockwatchers (1997)",
+"Clockwork Orange, A (1971)",
+"Close Encounters of the Third Kind (1977)",
+"Closer You Get, The (2000)",
+"Clue (1985)",
+"Clueless (1995)",
+"Cobb (1994)",
+"Cocoon (1985)",
+"Cocoon: The Return (1988)",
+"Cold Comfort Farm (1995)",
+"Cold Fever (Ã kÃ¶ldum klaka) (1995)",
+"Collector, The (La collectionneuse) (1967)",
+"Colonel Chabert, Le (1994)",
+"Color of Money, The (1986)",
+"Color of Night (1994)",
+"Color of Paradise, The (Rang-e khoda) (1999)",
+"Color Purple, The (1985)",
+"Coma (1978)",
+"Come See the Paradise (1990)",
+"Coming Home (1978)",
+"Commitments, The (1991)",
+"Communion (1989)",
+"Computer Wore Tennis Shoes, The (1969)",
+"Con Air (1997)",
+"Conan the Barbarian (1982)",
+"Condorman (1981)",
+"Coneheads (1993)",
+"Conformist, The (Conformista, Il) (1970)",
+"Congo (1995)",
+"Conquest of the Planet of the Apes (1972)",
+"Conspiracy Theory (1997)",
+"Contact (1997)",
+"Contempt (MÃ©pris, Le) (1963)",
+"Contender, The (2000)",
+"Conversation, The (1974)",
+"Cook the Thief His Wife & Her Lover, The (1989)",
+"Cookie's Fortune (1999)",
+"Cool Hand Luke (1967)",
+"Cool Runnings (1993)",
+"Cool, Dry Place, A (1998)",
+"Cop Land (1997)",
+"Cops and Robbersons (1994)",
+"Copycat (1995)",
+"Corrina, Corrina (1994)",
+"Corruptor, The (1999)",
+"Courage Under Fire (1996)",
+"Cowboy Way, The (1994)",
+"Coyote Ugly (2000)",
+"Cradle Will Rock (1999)",
+"Craft, The (1996)",
+"Crash (1996)",
+"Crazy in Alabama (1999)",
+"Creature Comforts (1989)",
+"Creature from the Black Lagoon, The (1954)",
+"Creepshow (1982)",
+"Creepshow 2 (1987)",
+"Crew, The (2000)",
+"Crime and Punishment in Suburbia (2000)",
+"Crimes and Misdemeanors (1989)",
+"Crimes of the Heart (1986)",
+"Crimson Pirate, The (1952)",
+"Crimson Tide (1995)",
+"Critical Care (1997)",
+"Crocodile Dundee (1986)",
+"Crocodile Dundee II (1988)",
+"Crooklyn (1994)",
+"Crossfire (1947)",
+"Crossing Guard, The (1995)",
+"Crouching Tiger, Hidden Dragon (Wo hu cang long) (2000)",
+"Croupier (1998)",
+"Crow, The (1994)",
+"Crow: City of Angels, The (1996)",
+"Crow: Salvation, The (2000)",
+"Crucible, The (1996)",
+"Cruel Intentions (1999)",
+"Cruise, The (1998)",
+"Crumb (1994)",
+"Crush, The (1993)",
+"Cry in the Dark, A (1988)",
+"Cry, the Beloved Country (1995)",
+"Crying Game, The (1992)",
+"Cube (1997)",
+"Cujo (1983)",
+"Cup, The (PhÃ¶rpa) (1999)",
+"Cure, The (1995)",
+"Curse of Frankenstein, The (1957)",
+"Cutter's Way (1981)",
+"Cutthroat Island (1995)",
+"Cutting Edge, The (1992)",
+"Cyrano de Bergerac (1990)",
+"D2: The Mighty Ducks (1994)",
+"D3: The Mighty Ducks (1996)",
+"DÃ©jÃ  Vu (1997)",
+"Daddy Long Legs (1919)",
+"Damien: Omen II (1978)",
+"Dancemaker (1998)",
+"Dancer in the Dark (2000)",
+"Dancer, Texas Pop. 81 (1998)",
+"Dances with Wolves (1990)",
+"Dangerous Beauty (1998)",
+"Dangerous Ground (1997)",
+"Dangerous Liaisons (1988)",
+"Dangerous Minds (1995)",
+"Dante's Peak (1997)",
+"Darby O'Gill and the Little People (1959)",
+"Dark City (1998)",
+"Dark Crystal, The (1982)",
+"Dark Half, The (1993)",
+"Date with an Angel (1987)",
+"Daughters of the Dust (1991)",
+"Dave (1993)",
+"Davy Crockett, King of the Wild Frontier (1955)",
+"Day of the Beast, The (DÃ­a de la Bestia, El) (1995)",
+"Day the Earth Stood Still, The (1951)",
+"Daylight (1996)",
+"Days of Heaven (1978)",
+"Days of Thunder (1990)",
+"Daytrippers, The (1996)",
+"Dazed and Confused (1993)",
+"Dead Again (1991)",
+"Dead Alive (Braindead) (1992)",
+"Dead Calm (1989)",
+"Dead Man (1995)",
+"Dead Man on Campus (1998)",
+"Dead Man Walking (1995)",
+"Dead Men Don't Wear Plaid (1982)",
+"Dead Poets Society (1989)",
+"Dead Presidents (1995)",
+"Dead Ringers (1988)",
+"Dead Zone, The (1983)",
+"Deadly Friend (1986)",
+"Deadtime Stories (1987)",
+"Dear Diary (Caro Diario) (1994)",
+"Dear God (1996)",
+"Death and the Maiden (1994)",
+"Death Becomes Her (1992)",
+"Death Wish (1974)",
+"Death Wish 2 (1982)",
+"Death Wish 3 (1985)",
+"Death Wish 4: The Crackdown (1987)",
+"Death Wish 5: The Face of Death (1994)",
+"Deceiver (1997)",
+"Decline of Western Civilization Part II: The Metal Years, The (1988)",
+"Decline of Western Civilization, The (1981)",
+"Deconstructing Harry (1997)",
+"Deep Blue Sea (1999)",
+"Deep End of the Ocean, The (1999)",
+"Deep Impact (1998)",
+"Deep Rising (1998)",
+"Deer Hunter, The (1978)",
+"Defending Your Life (1991)",
+"Delicatessen (1991)",
+"Deliverance (1972)",
+"Delta of Venus (1995)",
+"Demolition Man (1993)",
+"Denise Calls Up (1995)",
+"Dersu Uzala (1975)",
+"Desperado (1995)",
+"Desperate Measures (1998)",
+"Desperately Seeking Susan (1985)",
+"Destiny Turns on the Radio (1995)",
+"Detour (1945)",
+"Detroit Rock City (1999)",
+"Deuce Bigalow: Male Gigolo (1999)",
+"Devil and Max Devlin, The (1981)",
+"Devil in a Blue Dress (1995)",
+"Devil's Own, The (1997)",
+"Diabolique (1996)",
+"Dial M for Murder (1954)",
+"Diamonds Are Forever (1971)",
+"Dick (1999)",
+"Dick Tracy (1990)",
+"Die Hard (1988)",
+"Die Hard 2 (1990)",
+"Die Hard: With a Vengeance (1995)",
+"Digimon: The Movie (2000)",
+"Diner (1982)",
+"Dinner Game, The (DÃ®ner de cons, Le) (1998)",
+"Dinosaur (2000)",
+"Dirty Dancing (1987)",
+"Dirty Dozen, The (1967)",
+"Dirty Work (1998)",
+"Disclosure (1994)",
+"Distinguished Gentleman, The (1992)",
+"Disturbing Behavior (1998)",
+"Diva (1981)",
+"Do the Right Thing (1989)",
+"Doctor Dolittle (1967)",
+"Doctor Zhivago (1965)",
+"Dog Day Afternoon (1975)",
+"Dog Park (1998)",
+"Dogma (1999)",
+"Dolores Claiborne (1995)",
+"Don Juan DeMarco (1995)",
+"Donnie Brasco (1997)",
+"Don't Be a Menace to South Central While Drinking Your Juice in the Hood (1996)",
+"Doom Generation, The (1995)",
+"Doors, The (1991)",
+"Double Happiness (1994)",
+"Double Indemnity (1944)",
+"Double Jeopardy (1999)",
+"Double Life of Veronique, The (Double Vie de VÃ©ronique, La) (1991)",
+"Double Team (1997)",
+"Doug's 1st Movie (1999)",
+"Down by Law (1986)",
+"Down Periscope (1996)",
+"Down to You (2000)",
+"Dr. Dolittle (1998)",
+"Dr. No (1962)",
+"Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb (1964)",
+"Dr. T and the Women (2000)",
+"Dracula (1931)",
+"Dracula (Bram Stoker's Dracula) (1992)",
+"Dracula: Dead and Loving It (1995)",
+"Dragonheart (1996)",
+"Draughtsman's Contract, The (1982)",
+"Dream for an Insomniac (1996)",
+"Dreamlife of Angels, The (Vie rÃªvÃ©e des anges, La) (1998)",
+"Dreamscape (1984)",
+"Drive Me Crazy (1999)",
+"Driving Miss Daisy (1989)",
+"Drop Dead Fred (1991)",
+"Drop Dead Gorgeous (1999)",
+"Drop Zone (1994)",
+"Drowning Mona (2000)",
+"Drugstore Cowboy (1989)",
+"Drunken Master (Jui kuen) (1978)",
+"Drunks (1995)",
+"Duck Soup (1933)",
+"Dudley Do-Right (1999)",
+"Duel in the Sun (1946)",
+"Duets (2000)",
+"Dumb & Dumber (Dumb and Dumber) (1994)",
+"Dumbo (1941)",
+"Dune (1984)",
+"Dungeons & Dragons (2000)",
+"Dunston Checks In (1996)",
+"Dying Young (1991)",
+"E.T. the Extra-Terrestrial (1982)",
+"Eagle Has Landed, The (1976)",
+"Earth vs. the Flying Saucers (1956)",
+"Earthquake (1974)",
+"East is East (1999)",
+"East of Eden (1955)",
+"East-West (Est-ouest) (1999)",
+"Easy Money (1983)",
+"Easy Rider (1969)",
+"Eat Drink Man Woman (Yin shi nan nu) (1994)",
+"Eaten Alive (1977)",
+"Ed (1996)",
+"Ed Wood (1994)",
+"Eddie (1996)",
+"Edge, The (1997)",
+"EDtv (1999)",
+"Edward Scissorhands (1990)",
+"Eighth Day, The (HuitiÃ¨me jour, Le) (1996)",
+"Election (1999)",
+"Elephant Man, The (1980)",
+"Elizabeth (1998)",
+"Emerald Forest, The (1985)",
+"Emma (1996)",
+"Emperor and the Assassin, The (Jing ke ci qin wang) (1999)",
+"Empire Records (1995)",
+"Enchanted April (1992)",
+"Encino Man (1992)",
+"End of Days (1999)",
+"End of the Affair, The (1999)",
+"Endless Summer, The (1966)",
+"Enemy of the State (1998)",
+"English Patient, The (1996)",
+"Englishman Who Went Up a Hill But Came Down a Mountain, The (1995)",
+"Entertaining Angels: The Dorothy Day Story (1996)",
+"Entrapment (1999)",
+"Eraser (1996)",
+"Eraserhead (1977)",
+"Erin Brockovich (2000)",
+"Escape from L.A. (1996)",
+"Escape from New York (1981)",
+"Escape from the Planet of the Apes (1971)",
+"Escape to Witch Mountain (1975)",
+"Escort, The (Scorta, La) (1993)",
+"European Vacation (aka National Lampoon's European Vacation) (1985)",
+"Even Cowgirls Get the Blues (1993)",
+"Event Horizon (1997)",
+"Ever After: A Cinderella Story (1998)",
+"Everest (1998)",
+"Everyone Says I Love You (1996)",
+"Everything You Always Wanted to Know About Sex * But Were Afraid to Ask (1972)",
+"Eve's Bayou (1997)",
+"Evil Dead II (Dead by Dawn) (1987)",
+"Evita (1996)",
+"Excalibur (1981)",
+"Excess Baggage (1997)",
+"Executive Decision (1996)",
+"eXistenZ (1999)",
+"Exit to Eden (1994)",
+"Exorcist II: The Heretic (1977)",
+"Exorcist III, The (1990)",
+"Exorcist, The (1973)",
+"Exotica (1994)",
+"Extreme Measures (1996)",
+"Extremities (1986)",
+"Eye for an Eye (1996)",
+"Eye of the Beholder (1999)",
+"Eyes of Laura Mars (1978)",
+"Eyes of Tammy Faye, The (2000)",
+"Eyes Wide Shut (1999)",
+"Eyes Without a Face (Yeux sans visage, Les) (1959)",
+"F/X (1986)",
+"F/X2 (a.k.a. F/X 2 - The Deadly Art of Illusion) (1991)",
+"Fabulous Baker Boys, The (1989)",
+"Face in the Crowd, A (1957)",
+"Face/Off (1997)",
+"Faculty, The (1998)",
+"Fair Game (1995)",
+"FairyTale: A True Story (1997)",
+"Fall (1997)",
+"Fallen (1998)",
+"Fallen Angels (Duo luo tian shi) (1995)",
+"Falling Down (1993)",
+"Family Plot (1976)",
+"Family Thing, A (1996)",
+"Fan, The (1996)",
+"Fandango (1985)",
+"Fanny and Alexander (Fanny och Alexander) (1982)",
+"Fantasia (1940)",
+"Fantasia 2000 (1999)",
+"Fantastic Planet, The (PlanÃ¨te sauvage, La) (1973)",
+"Fantastic Voyage (1966)",
+"Far and Away (1992)",
+"Far From Home: The Adventures of Yellow Dog (1995)",
+"Faraway, So Close (In weiter Ferne, so nah!) (1993)",
+"Farewell My Concubine (Ba wang bie ji) (1993)",
+"Farewell to Arms, A (1932)",
+"Fargo (1996)",
+"Farinelli: il castrato (1994)",
+"Fast Times at Ridgemont High (1982)",
+"Fast, Cheap & Out of Control (1997)",
+"Faster Pussycat! Kill! Kill! (1965)",
+"Fatal Attraction (1987)",
+"Fatal Beauty (1987)",
+"Fatal Instinct (1993)",
+"Father of the Bride (1950)",
+"Father of the Bride Part II (1995)",
+"Fathers' Day (1997)",
+"Fear (1996)",
+"Fear and Loathing in Las Vegas (1998)",
+"Fear of a Black Hat (1994)",
+"Fearless (1993)",
+"Federal Hill (1994)",
+"Feeling Minnesota (1996)",
+"Felicia's Journey (1999)",
+"Female Perversions (1996)",
+"Femme Nikita, La (Nikita) (1990)",
+"Ferris Bueller's Day Off (1986)",
+"Fever Pitch (1997)",
+"Few Good Men, A (1992)",
+"Field of Dreams (1989)",
+"Fiendish Plot of Dr. Fu Manchu, The (1980)",
+"Fierce Creatures (1997)",
+"Fifth Element, The (1997)",
+"Fight Club (1999)",
+"Fighting Seabees, The (1944)",
+"Filth and the Fury, The (2000)",
+"Final Conflict, The (a.k.a. Omen III: The Final Conflict) (1981)",
+"Final Destination (2000)",
+"Fire Down Below (1997)",
+"Firestarter (1984)",
+"Firewalker (1986)",
+"Fireworks (Hana-bi) (1997)",
+"Firm, The (1993)",
+"First Blood (Rambo: First Blood) (1982)",
+"First Kid (1996)",
+"First Knight (1995)",
+"First Strike (Police Story 4: First Strike) (Ging chaat goo si 4: Ji gaan daan yam mo) (1996)",
+"First Wives Club, The (1996)",
+"Fish Called Wanda, A (1988)",
+"Fisher King, The (1991)",
+"Fistful of Dollars, A (Per un pugno di dollari) (1964)",
+"Fitzcarraldo (1982)",
+"Five Easy Pieces (1970)",
+"Five Senses, The (1999)",
+"Flamingo Kid, The (1984)",
+"Flashdance (1983)",
+"Flatliners (1990)",
+"Flawless (1999)",
+"Fled (1996)",
+"Flesh and Bone (1993)",
+"Fletch (1985)",
+"Fletch Lives (1989)",
+"Flight of the Navigator (1986)",
+"Flintstones in Viva Rock Vegas, The (2000)",
+"Flintstones, The (1994)",
+"Flipper (1996)",
+"Flirting With Disaster (1996)",
+"Flower of My Secret, The (La flor de mi secreto) (1995)",
+"Flubber (1997)",
+"Fluke (1995)",
+"Fly Away Home (1996)",
+"Fly II, The (1989)",
+"Fly, The (1958)",
+"Fly, The (1986)",
+"Flying Tigers (1942)",
+"Fog, The (1980)",
+"Following (1998)",
+"Fools Rush In (1997)",
+"Footloose (1984)",
+"For a Few Dollars More (Per qualche dollaro in piÃ¹) (1965)",
+"For All Mankind (1989)",
+"For Love of the Game (1999)",
+"For Love or Money (1993)",
+"For Richer or Poorer (1997)",
+"For Roseanna (Roseanna's Grave) (1997)",
+"For the Love of Benji (1977)",
+"For Whom the Bell Tolls (1943)",
+"For Your Eyes Only (1981)",
+"Forbidden Planet (1956)",
+"Force 10 from Navarone (1978)",
+"Forces of Nature (1999)",
+"Foreign Correspondent (1940)",
+"Forever Young (1992)",
+"Forget Paris (1995)",
+"Forrest Gump (1994)",
+"Four Days in September (O Que Ã‰ Isso, Companheiro?) (1997)",
+"Four Rooms (1995)",
+"Four Weddings and a Funeral (1994)",
+"Fox and the Hound, The (1981)",
+"Foxfire (1996)",
+"Frances (1982)",
+"Frankenstein (1931)",
+"Frankenstein Meets the Wolf Man (1943)",
+"Freaky Friday (1977)",
+"Freddy's Dead: The Final Nightmare (Nightmare on Elm Street Part 6: Freddy's Dead, A) (1991)",
+"Free Enterprise (1998)",
+"Free Willy (1993)",
+"Free Willy 2: The Adventure Home (1995)",
+"Freejack (1992)",
+"Freeway (1996)",
+"French Connection, The (1971)",
+"French Kiss (1995)",
+"French Twist (Gazon maudit) (1995)",
+"Frenzy (1972)",
+"Frequency (2000)",
+"Fresh (1994)",
+"Friday (1995)",
+"Friday the 13th (1980)",
+"Friday the 13th Part 2 (1981)",
+"Friday the 13th Part 3: 3D (1982)",
+"Friday the 13th Part IV: The Final Chapter (1984)",
+"Friday the 13th Part V: A New Beginning (1985)",
+"Friday the 13th Part VI: Jason Lives (1986)",
+"Friday the 13th Part VII: The New Blood (1988)",
+"Friday the 13th Part VIII: Jason Takes Manhattan (1989)",
+"Fried Green Tomatoes (1991)",
+"Friends & Lovers (1999)",
+"Fright Night (1985)",
+"Fright Night Part II (1988)",
+"Frighteners, The (1996)",
+"Frisk (1995)",
+"From Dusk Till Dawn (1996)",
+"From Here to Eternity (1953)",
+"From Russia with Love (1963)",
+"From the Hip (1987)",
+"Fugitive, The (1993)",
+"Full Metal Jacket (1987)",
+"Full Monty, The (1997)",
+"Funeral, The (1996)",
+"Funhouse, The (1981)",
+"Funny Bones (1995)",
+"Funny Face (1957)",
+"Funny Farm (1988)",
+"Fury, The (1978)",
+"G.I. Jane (1997)",
+"Galaxy Quest (1999)",
+"Game, The (1997)",
+"Gandhi (1982)",
+"Gang Related (1997)",
+"Gaslight (1944)",
+"Gate, The (1987)",
+"Gattaca (1997)",
+"Gay Divorcee, The (1934)",
+"General, The (1926)",
+"General, The (1998)",
+"General's Daughter, The (1999)",
+"Gentleman's Agreement (1947)",
+"George of the Jungle (1997)",
+"Georgia (1995)",
+"Germinal (1993)",
+"Geronimo: An American Legend (1993)",
+"Get Carter (1971)",
+"Get Carter (2000)",
+"Get on the Bus (1996)",
+"Get Real (1998)",
+"Get Shorty (1995)",
+"Getaway, The (1994)",
+"Getting Even with Dad (1994)",
+"Ghost (1990)",
+"Ghost and Mrs. Muir, The (1947)",
+"Ghost and the Darkness, The (1996)",
+"Ghost Dog: The Way of the Samurai (1999)",
+"Ghost in the Shell (KÃ´kaku kidÃ´tai) (1995)",
+"Ghostbusters (a.k.a. Ghost Busters) (1984)",
+"Ghostbusters II (1989)",
+"Ghosts of Mississippi (1996)",
+"Ghoulies II (1987)",
+"Giant (1956)",
+"Gigi (1958)",
+"Gilda (1946)",
+"Gingerbread Man, The (1998)",
+"Girl 6 (1996)",
+"Girl on the Bridge, The (Fille sur le pont, La) (1999)",
+"Girl, Interrupted (1999)",
+"Girlfight (2000)",
+"Gladiator (2000)",
+"Glen or Glenda (1953)",
+"Glengarry Glen Ross (1992)",
+"Glimmer Man, The (1996)",
+"Glory (1989)",
+"Glory Daze (1995)",
+"Go (1999)",
+"Go Fish (1994)",
+"Godfather, The (1972)",
+"Godfather: Part II, The (1974)",
+"Godfather: Part III, The (1990)",
+"Gods and Monsters (1998)",
+"Gods Must Be Crazy II, The (1989)",
+"Gods Must Be Crazy, The (1980)",
+"Godzilla (1998)",
+"Godzilla (Gojira) (1954)",
+"Godzilla 1985: The Legend Is Reborn (Gojira) (Godzilla) (Return of Godzilla, The) (1984)",
+"Godzilla 2000 (Gojira ni-sen mireniamu) (1999)",
+"Going My Way (1944)",
+"Gold Rush, The (1925)",
+"Golden Bowl, The (2000)",
+"Golden Child, The (1986)",
+"GoldenEye (1995)",
+"Goldfinger (1964)",
+"Gone Fishin' (1997)",
+"Gone in 60 Seconds (2000)",
+"Gone with the Wind (1939)",
+"Good Earth, The (1937)",
+"Good Morning, Vietnam (1987)",
+"Good Mother, The (1988)",
+"Good Will Hunting (1997)",
+"Good, the Bad and the Ugly, The (Buono, il brutto, il cattivo, Il) (1966)",
+"Goodbye Girl, The (1977)",
+"Goodbye Lover (1999)",
+"Goodfellas (1990)",
+"Goofy Movie, A (1995)",
+"Goonies, The (1985)",
+"Gordy (1995)",
+"Gossip (2000)",
+"Gothic (1986)",
+"Grace of My Heart (1996)",
+"Graduate, The (1967)",
+"Grand Canyon (1991)",
+"Grand Day Out with Wallace and Gromit, A (1989)",
+"Grand Hotel (1932)",
+"Grand Illusion (La grande illusion) (1937)",
+"Grapes of Wrath, The (1940)",
+"Grease (1978)",
+"Grease 2 (1982)",
+"Great Day in Harlem, A (1994)",
+"Great Dictator, The (1940)",
+"Great Escape, The (1963)",
+"Great Expectations (1998)",
+"Great Mouse Detective, The (1986)",
+"Great Muppet Caper, The (1981)",
+"Great Race, The (1965)",
+"Great Santini, The (1979)",
+"Great White Hype, The (1996)",
+"Great Ziegfeld, The (1936)",
+"Green Mile, The (1999)",
+"Gremlins (1984)",
+"Gremlins 2: The New Batch (1990)",
+"Gridlock'd (1997)",
+"Grifters, The (1990)",
+"Groove (2000)",
+"Grosse Pointe Blank (1997)",
+"Groundhog Day (1993)",
+"Grumpier Old Men (1995)",
+"Grumpy Old Men (1993)",
+"Guardian, The (1990)",
+"Guess Who's Coming to Dinner (1967)",
+"Guinevere (1999)",
+"Gulliver's Travels (1939)",
+"Gun Shy (2000)",
+"Gung Ho (1986)",
+"Guns of Navarone, The (1961)",
+"Guys and Dolls (1955)",
+"Gypsy (1962)",
+"Hackers (1995)",
+"Hairspray (1988)",
+"Half Baked (1998)",
+"Halloween (1978)",
+"Halloween 4: The Return of Michael Myers (1988)",
+"Halloween 5: The Revenge of Michael Myers (1989)",
+"Halloween H20: 20 Years Later (Halloween 7: The Revenge of Laurie Strode) (1998)",
+"Halloween II (1981)",
+"Halloween III: Season of the Witch (1982)",
+"Halloween: The Curse of Michael Myers (Halloween 6: The Curse of Michael Myers) (1995)",
+"Hamlet (1948)",
+"Hamlet (1964)",
+"Hamlet (1990)",
+"Hamlet (1996)",
+"Hamlet (2000)",
+"Hand That Rocks the Cradle, The (1992)",
+"Hands on a Hard Body (1996)",
+"Hang 'Em High (1968)",
+"Hanging Up (2000)",
+"Happiness (1998)",
+"Happy Gilmore (1996)",
+"Happy Go Lovely (1951)",
+"Happy, Texas (1999)",
+"Hard Core Logo (1996)",
+"Hard Day's Night, A (1964)",
+"Hard Rain (1998)",
+"Hard Target (1993)",
+"Hard-Boiled (Lat sau san taam) (1992)",
+"Harmonists, The (1997)",
+"Harold and Maude (1971)",
+"Harriet the Spy (1996)",
+"Harry and the Hendersons (1987)",
+"Harvey (1950)",
+"Hate (Haine, La) (1995)",
+"Haunted Honeymoon (1986)",
+"Haunted World of Edward D. Wood Jr., The (1996)",
+"Haunting, The (1963)",
+"Haunting, The (1999)",
+"He Got Game (1998)",
+"Head Above Water (1996)",
+"Head On (1998)",
+"Hear My Song (1991)",
+"Heart and Souls (1993)",
+"Heart Condition (1990)",
+"Heartbreak Ridge (1986)",
+"Heartburn (1986)",
+"Hearts and Minds (1996)",
+"Heat (1995)",
+"Heathers (1989)",
+"Heaven Can Wait (1978)",
+"Heavenly Creatures (1994)",
+"Heaven's Prisoners (1996)",
+"Heavy (1995)",
+"Heavy Metal (1981)",
+"Heavyweights (Heavy Weights) (1995)",
+"Heidi Fleiss: Hollywood Madam (1995)",
+"Hell in the Pacific (1968)",
+"Hell Night (1981)",
+"Hellbound: Hellraiser II (1988)",
+"Hellraiser (1987)",
+"Hellraiser III: Hell on Earth (1992)",
+"Hellraiser: Bloodline (1996)",
+"Help! (1965)",
+"Henry Fool (1997)",
+"Henry V (1989)",
+"Henry: Portrait of a Serial Killer (1986)",
+"Herbie Goes Bananas (1980)",
+"Herbie Goes to Monte Carlo (1977)",
+"Herbie Rides Again (1974)",
+"Hercules (1997)",
+"Here on Earth (2000)",
+"Hero (1992)",
+"Hidden, The (1987)",
+"Hideaway (1995)",
+"Hideous Kinky (1998)",
+"High Art (1998)",
+"High Fidelity (2000)",
+"High Noon (1952)",
+"High Plains Drifter (1973)",
+"High School High (1996)",
+"Higher Learning (1995)",
+"Highlander (1986)",
+"Highlander III: The Sorcerer (a.k.a. Highlander: The Final Dimension) (1994)",
+"Highlander: Endgame (Highlander IV) (2000)",
+"Hilary and Jackie (1998)",
+"His Girl Friday (1940)",
+"History of the World: Part I (1981)",
+"Hocus Pocus (1993)",
+"Holiday Inn (1942)",
+"Hollow Man (2000)",
+"Hollywood Knights, The (1980)",
+"Holy Man (1998)",
+"Holy Smoke (1999)",
+"Home Alone (1990)",
+"Home Alone 2: Lost in New York (1992)",
+"Home Alone 3 (1997)",
+"Home for the Holidays (1995)",
+"Home Fries (1998)",
+"Homegrown (1998)",
+"Homeward Bound II: Lost in San Francisco (1996)",
+"Homeward Bound: The Incredible Journey (1993)",
+"Honey, I Blew Up the Kid (1992)",
+"Honey, I Shrunk the Kids (1989)",
+"Honeymoon in Vegas (1992)",
+"Hoodlum (1997)",
+"Hook (1991)",
+"Hoop Dreams (1994)",
+"Hoosiers (a.k.a. Best Shot) (1986)",
+"Hope Floats (1998)",
+"Horse Whisperer, The (1998)",
+"Horseman on the Roof, The (Hussard sur le toit, Le) (1995)",
+"Hot Lead and Cold Feet (1978)",
+"Hot Shots! Part Deux (1993)",
+"Hot Spot, The (1990)",
+"House (1986)",
+"House Arrest (1996)",
+"House II: The Second Story (1987)",
+"House of the Spirits, The (1993)",
+"House of Yes, The (1997)",
+"House on Haunted Hill (1999)",
+"House Party (1990)",
+"House Party 2 (1991)",
+"House Party 3 (1994)",
+"Houseguest (1994)",
+"How Stella Got Her Groove Back (1998)",
+"How the Grinch Stole Christmas (a.k.a. The Grinch) (2000)",
+"How to Make an American Quilt (1995)",
+"Howard the Duck (1986)",
+"Howards End (1992)",
+"Howling II: Your Sister Is a Werewolf (1985)",
+"Howling, The (1980)",
+"Hud (1963)",
+"Hudsucker Proxy, The (1994)",
+"Human Traffic (1999)",
+"Hunchback of Notre Dame, The (1996)",
+"Hunt for Red October, The (1990)",
+"Hunted, The (1995)",
+"Hurlyburly (1998)",
+"Hurricane Streets (1997)",
+"Hurricane, The (1999)",
+"Hush (1998)",
+"Hustler White (1996)",
+"Hustler, The (1961)",
+"Hype! (1996)",
+"I Confess (1953)",
+"I Know What You Did Last Summer (1997)",
+"I Like It Like That (1994)",
+"I Love Trouble (1994)",
+"I Love You, I Love You Not (1996)",
+"I Saw What You Did (1965)",
+"I Shot Andy Warhol (1996)",
+"I Stand Alone (Seul contre tous) (1998)",
+"I Still Know What You Did Last Summer (1998)",
+"I Went Down (1997)",
+"I.Q. (1994)",
+"Ice Storm, The (1997)",
+"Ideal Husband, An (1999)",
+"Idiots, The (Idioterne) (1998)",
+"Idle Hands (1999)",
+"If Lucy Fell (1996)",
+"I'll Be Home For Christmas (1998)",
+"I'll Do Anything (1994)",
+"Ilsa, She Wolf of the SS (1974)",
+"I'm the One That I Want (2000)",
+"Immortal Beloved (1994)",
+"Impostors, The (1998)",
+"In & Out (1997)",
+"In Crowd, The (2000)",
+"In Dreams (1999)",
+"In Love and War (1996)",
+"In Search of the Castaways (1962)",
+"In the Army Now (1994)",
+"In the Bleak Midwinter (1995)",
+"In the Company of Men (1997)",
+"In the Heat of the Night (1967)",
+"In the Line of Fire (1993)",
+"In the Mouth of Madness (1995)",
+"In the Name of the Father (1993)",
+"In the Realm of the Senses (Ai no corrida) (1976)",
+"In Too Deep (1999)",
+"Incognito (1997)",
+"Incredible Journey, The (1963)",
+"Incredibly True Adventure of Two Girls in Love, The (1995)",
+"Indecent Proposal (1993)",
+"Independence Day (a.k.a. ID4) (1996)",
+"Indian in the Cupboard, The (1995)",
+"Indian Summer (a.k.a. Alive & Kicking) (1996)",
+"Indiana Jones and the Last Crusade (1989)",
+"Indiana Jones and the Temple of Doom (1984)",
+"Indochine (1992)",
+"Inferno (1980)",
+"Infinity (1996)",
+"Inherit the Wind (1960)",
+"Inkwell, The (1994)",
+"Innocents, The (1961)",
+"Insider, The (1999)",
+"Insomnia (1997)",
+"Inspector Gadget (1999)",
+"Inspector General, The (1949)",
+"Instinct (1999)",
+"Interiors (1978)",
+"Interview with the Vampire: The Vampire Chronicles (1994)",
+"Invasion of the Body Snatchers (1956)",
+"Inventing the Abbotts (1997)",
+"Invisible Man, The (1933)",
+"Ipcress File, The (1965)",
+"Irma la Douce (1963)",
+"Iron Eagle (1986)",
+"Iron Eagle II (1988)",
+"Iron Eagle IV (1995)",
+"Iron Giant, The (1999)",
+"Island of Dr. Moreau, The (1996)",
+"It Came from Hollywood (1982)",
+"It Came from Outer Space (1953)",
+"It Could Happen to You (1994)",
+"It Happened One Night (1934)",
+"It Takes Two (1995)",
+"It's a Wonderful Life (1946)",
+"It's My Party (1996)",
+"Jack (1996)",
+"Jack and Sarah (1995)",
+"Jack Frost (1998)",
+"Jackal, The (1997)",
+"Jackie Brown (1997)",
+"Jacob's Ladder (1990)",
+"Jade (1995)",
+"Jagged Edge (1985)",
+"Jakob the Liar (1999)",
+"Jamaica Inn (1939)",
+"James and the Giant Peach (1996)",
+"Jane Austen's Mafia! (1998)",
+"Jane Eyre (1996)",
+"Jason's Lyric (1994)",
+"Jawbreaker (1999)",
+"Jaws (1975)",
+"Jaws 2 (1978)",
+"Jaws 3-D (1983)",
+"Jean de Florette (1986)",
+"Jefferson in Paris (1995)",
+"Jeffrey (1995)",
+"Jennifer 8 (1992)",
+"Jeremiah Johnson (1972)",
+"Jerk, The (1979)",
+"Jerky Boys, The (1995)",
+"Jerry Maguire (1996)",
+"Jesus' Son (1999)",
+"Jewel of the Nile, The (1985)",
+"JFK (1991)",
+"Jimmy Hollywood (1994)",
+"Jingle All the Way (1996)",
+"Joe Gould's Secret (2000)",
+"Joe's Apartment (1996)",
+"Johnny Mnemonic (1995)",
+"Jonah Who Will Be 25 in the Year 2000 (Jonas qui aura 25 ans en l'an 2000) (1976)",
+"Journey of Natty Gann, The (1985)",
+"Joy Luck Club, The (1993)",
+"Jude (1996)",
+"Judge Dredd (1995)",
+"Judgment Night (1993)",
+"Jules and Jim (Jules et Jim) (1961)",
+"Julien Donkey-Boy (1999)",
+"Jumanji (1995)",
+"Jumpin' Jack Flash (1986)",
+"Jungle Book, The (1967)",
+"Jungle Book, The (1994)",
+"Jungle Fever (1991)",
+"Jungle2Jungle (a.k.a. Jungle 2 Jungle) (1997)",
+"Junior (1994)",
+"Jupiter's Wife (1994)",
+"Jurassic Park (1993)",
+"Juror, The (1996)",
+"Jury Duty (1995)",
+"Just Cause (1995)",
+"Kagemusha (1980)",
+"Kalifornia (1993)",
+"Kama Sutra: A Tale of Love (1996)",
+"Kansas City (1996)",
+"Karate Kid, Part II, The (1986)",
+"Karate Kid, Part III, The (1989)",
+"Karate Kid, The (1984)",
+"Kaspar Hauser (1993)",
+"Kazaam (1996)",
+"Keeping the Faith (2000)",
+"Kelly's Heroes (1970)",
+"Kentucky Fried Movie, The (1977)",
+"Key Largo (1948)",
+"Kicking and Screaming (1995)",
+"Kid in King Arthur's Court, A (1995)",
+"Kid, The (1921)",
+"Kid, The (2000)",
+"Kids (1995)",
+"Kids in the Hall: Brain Candy (1996)",
+"Kika (1993)",
+"Killer Shrews, The (1959)",
+"Killer, The (Die xue shuang xiong) (1989)",
+"Killer's Kiss (1955)",
+"Killing Fields, The (1984)",
+"Killing Zoe (1994)",
+"Killing, The (1956)",
+"Kindred, The (1986)",
+"King and I, The (1956)",
+"King and I, The (1999)",
+"King in New York, A (1957)",
+"King Kong (1933)",
+"King Kong (1976)",
+"King Kong Lives (1986)",
+"King Kong vs. Godzilla (Kingukongu tai Gojira) (1962)",
+"King of Masks, The (Bian Lian) (1996)",
+"King of New York (1990)",
+"Kingpin (1996)",
+"Kiss Me, Guido (1997)",
+"Kiss of Death (1995)",
+"Kiss the Girls (1997)",
+"Kissed (1996)",
+"Klute (1971)",
+"Knock Off (1998)",
+"Kolya (Kolja) (1996)",
+"Koyaanisqatsi (a.k.a. Koyaanisqatsi: Life Out of Balance) (1983)",
+"Kramer vs. Kramer (1979)",
+"Krippendorf's Tribe (1998)",
+"Kull the Conqueror (1997)",
+"Kundun (1997)",
+"Kurt & Courtney (1998)",
+"L.A. Confidential (1997)",
+"L.A. Story (1991)",
+"La CÃ©rÃ©monie (1995)",
+"LÃ©on: The Professional (a.k.a. The Professional) (LÃ©on) (1994)",
+"Labyrinth (1986)",
+"Ladies Man, The (2000)",
+"Lady and the Tramp (1955)",
+"Lady Eve, The (1941)",
+"Lady Vanishes, The (1938)",
+"Ladybird Ladybird (1994)",
+"Ladyhawke (1985)",
+"Lake Placid (1999)",
+"Lamerica (1994)",
+"Land and Freedom (Tierra y libertad) (1995)",
+"Land Before Time III: The Time of the Great Giving (1995)",
+"Larger Than Life (1996)",
+"Lassie (1994)",
+"Last Action Hero (1993)",
+"Last Dance (1996)",
+"Last Days of Disco, The (1998)",
+"Last Days, The (1998)",
+"Last Detail, The (1973)",
+"Last Emperor, The (1987)",
+"Last Klezmer: Leopold Kozlowski, His Life and Music, The (1994)",
+"Last Man Standing (1996)",
+"Last Night (1998)",
+"Last of the Mohicans, The (1992)",
+"Last Picture Show, The (1971)",
+"Last Supper, The (1995)",
+"Last Temptation of Christ, The (1988)",
+"Laura (1944)",
+"Lawnmower Man 2: Beyond Cyberspace (1996)",
+"Lawnmower Man, The (1992)",
+"Lawrence of Arabia (1962)",
+"League of Their Own, A (1992)",
+"Leave It to Beaver (1997)",
+"Leaving Las Vegas (1995)",
+"Legend (1985)",
+"Legend of 1900, The (a.k.a. The Legend of the Pianist on the Ocean) (Leggenda del pianista sull'oceano) (1998)",
+"Legend of Bagger Vance, The (2000)",
+"Legend of Drunken Master, The (Jui kuen II) (1994)",
+"Legends of the Fall (1994)",
+"Lesson Faust (1994)",
+"Lethal Weapon (1987)",
+"Lethal Weapon 2 (1989)",
+"Lethal Weapon 3 (1992)",
+"Lethal Weapon 4 (1998)",
+"Let's Get Harry (1986)",
+"Liar Liar (1997)",
+"Liberty Heights (1999)",
+"Licence to Kill (1989)",
+"Life (1999)",
+"Life Is Beautiful (La Vita Ã¨ bella) (1997)",
+"Life Less Ordinary, A (1997)",
+"Life of Emile Zola, The (1937)",
+"Life with Mikey (1993)",
+"Lifeboat (1944)",
+"Lifeforce (1985)",
+"Light Years (Gandahar) (1988)",
+"Lightning Jack (1994)",
+"Like Water for Chocolate (Como agua para chocolate) (1992)",
+"Limbo (1999)",
+"Limelight (1952)",
+"Limey, The (1999)",
+"Line King: The Al Hirschfeld Story, The (1996)",
+"Lion King, The (1994)",
+"Little Big League (1994)",
+"Little Big Man (1970)",
+"Little Buddha (1993)",
+"Little Lord Fauntleroy (1936)",
+"Little Mermaid, The (1989)",
+"Little Nemo: Adventures in Slumberland (1992)",
+"Little Nicky (2000)",
+"Little Princess, A (1995)",
+"Little Princess, The (1939)",
+"Little Rascals, The (1994)",
+"Little Shop of Horrors (1986)",
+"Little Shop of Horrors, The (1960)",
+"Little Vampire, The (2000)",
+"Little Voice (1998)",
+"Little Women (1994)",
+"Live and Let Die (1973)",
+"Live Flesh (Carne trÃ©mula) (1997)",
+"Live Nude Girls (1995)",
+"Living Daylights, The (1987)",
+"Living in Oblivion (1995)",
+"Living Out Loud (1998)",
+"Loaded Weapon 1 (National Lampoon's Loaded Weapon 1) (1993)",
+"Local Hero (1983)",
+"Lock, Stock & Two Smoking Barrels (1998)",
+"Lodger: A Story of the London Fog, The (1927)",
+"Logan's Run (1976)",
+"Lolita (1962)",
+"Lolita (1997)",
+"Lone Star (1996)",
+"Lonely Are the Brave (1962)",
+"Long Goodbye, The (1973)",
+"Long Kiss Goodnight, The (1996)",
+"Long Walk Home, The (1990)",
+"Longest Day, The (1962)",
+"Looking for Richard (1996)",
+"Lord of Illusions (1995)",
+"Lord of the Flies (1963)",
+"Lord of the Rings, The (1978)",
+"Lords of Flatbush, The (1974)",
+"Loser (1991)",
+"Loser (2000)",
+"Losing Isaiah (1995)",
+"Loss of Sexual Innocence, The (1999)",
+"Lost & Found (1999)",
+"Lost Highway (1997)",
+"Lost Horizon (1937)",
+"Lost in Space (1998)",
+"Lost Weekend, The (1945)",
+"Lost World: Jurassic Park, The (1997)",
+"Love & Human Remains (1993)",
+"Love Affair (1994)",
+"Love and a .45 (1994)",
+"Love and Basketball (2000)",
+"Love and Death (1975)",
+"Love and Death on Long Island (1997)",
+"Love and Other Catastrophes (1996)",
+"Love Bug, The (1969)",
+"Love in the Afternoon (1957)",
+"Love Is a Many-Splendored Thing (1955)",
+"Love Is the Devil (1998)",
+"Love Jones (1997)",
+"Love Letter, The (1999)",
+"Love Serenade (1996)",
+"Lovers of the Arctic Circle, The (Los Amantes del CÃ­rculo Polar) (1998)",
+"Love's Labour's Lost (2000)",
+"Low Down Dirty Shame, A (1994)",
+"Lucas (1986)",
+"M (1931)",
+"M. Butterfly (1993)",
+"MÃ©nage (Tenue de soirÃ©e) (1986)",
+"Mackenna's Gold (1969)",
+"Mad City (1997)",
+"Mad Love (1995)",
+"Mad Max (1979)",
+"Mad Max Beyond Thunderdome (1985)",
+"Madame Sousatzka (1988)",
+"Made in America (1993)",
+"Madeline (1998)",
+"Madness of King George, The (1994)",
+"Madonna: Truth or Dare (1991)",
+"Magnolia (1999)",
+"Magnum Force (1973)",
+"Major League: Back to the Minors (1998)",
+"Major Payne (1995)",
+"MalÃ¨na (2000)",
+"Malcolm X (1992)",
+"Malice (1993)",
+"Mallrats (1995)",
+"Maltese Falcon, The (1941)",
+"Man and a Woman, A (Un homme et une femme) (1966)",
+"Man Bites Dog (C'est arrivÃ© prÃ¨s de chez vous) (1992)",
+"Man for All Seasons, A (1966)",
+"Man in the Iron Mask, The (1998)",
+"Man of No Importance, A (1994)",
+"Man of the House (1995)",
+"Man of the Year (1995)",
+"Man on the Moon (1999)",
+"Man Who Knew Too Little, The (1997)",
+"Man Who Knew Too Much, The (1934)",
+"Man Who Knew Too Much, The (1956)",
+"Man Who Would Be King, The (1975)",
+"Man with the Golden Arm, The (1955)",
+"Man with the Golden Gun, The (1974)",
+"Man with Two Brains, The (1983)",
+"Man Without a Face, The (1993)",
+"Manchurian Candidate, The (1962)",
+"Manhattan (1979)",
+"Manhattan Murder Mystery (1993)",
+"Manon of the Spring (Manon des sources) (1986)",
+"Mansfield Park (1999)",
+"Marathon Man (1976)",
+"Mariachi, El (1992)",
+"Mark of Zorro, The (1940)",
+"Marked for Death (1990)",
+"Marnie (1964)",
+"Married to the Mob (1988)",
+"Mars Attacks! (1996)",
+"Marty (1955)",
+"Marvin's Room (1996)",
+"Mary Poppins (1964)",
+"Mary Reilly (1996)",
+"Mary Shelley's Frankenstein (Frankenstein) (1994)",
+"Mask of Zorro, The (1998)",
+"Mask, The (1994)",
+"Masque of the Red Death, The (1964)",
+"MatchMaker, The (1997)",
+"Matewan (1987)",
+"Matilda (1996)",
+"Matrix, The (1999)",
+"Maurice (1987)",
+"Maverick (1994)",
+"Max Dugan Returns (1983)",
+"Maximum Overdrive (1986)",
+"Maximum Risk (1996)",
+"Maya Lin: A Strong Clear Vision (1994)",
+"McCabe & Mrs. Miller (1971)",
+"McHale's Navy (1997)",
+"Me Myself I (2000)",
+"Me, Myself & Irene (2000)",
+"Meatballs (1979)",
+"Meatballs 4 (1992)",
+"Meatballs III (1987)",
+"Meatballs Part II (1984)",
+"Medicine Man (1992)",
+"Mediterraneo (1991)",
+"Meet Joe Black (1998)",
+"Meet John Doe (1941)",
+"Meet Me in St. Louis (1944)",
+"Meet the Parents (2000)",
+"Meet Wally Sparks (1997)",
+"Melvin and Howard (1980)",
+"Men in Black (a.k.a. MIB) (1997)",
+"Men of Honor (2000)",
+"Menace II Society (1993)",
+"Mephisto (1981)",
+"Mercury Rising (1998)",
+"Message in a Bottle (1999)",
+"Messenger: The Story of Joan of Arc, The (1999)",
+"Meteor (1979)",
+"Metro (1997)",
+"Metroland (1997)",
+"Metropolis (1927)",
+"Metropolitan (1990)",
+"Miami Rhapsody (1995)",
+"Michael (1996)",
+"Michael Collins (1996)",
+"Mickey Blue Eyes (1999)",
+"Microcosmos (Microcosmos: Le peuple de l'herbe) (1996)",
+"Midnight Cowboy (1969)",
+"Midnight Express (1978)",
+"Midnight in the Garden of Good and Evil (1997)",
+"Midnight Run (1988)",
+"Mighty Aphrodite (1995)",
+"Mighty Ducks, The (1992)",
+"Mighty Joe Young (1949)",
+"Mighty Joe Young (1998)",
+"Mighty Morphin Power Rangers: The Movie (1995)",
+"Mighty, The (1998)",
+"Mildred Pierce (1945)",
+"Milk Money (1994)",
+"Miller's Crossing (1990)",
+"Mimic (1997)",
+"Mina Tannenbaum (1994)",
+"Minnie and Moskowitz (1971)",
+"Minus Man, The (1999)",
+"Miracle on 34th Street (1947)",
+"Miracle on 34th Street (1994)",
+"Mirror Has Two Faces, The (1996)",
+"Mirror, The (Zerkalo) (1975)",
+"MisÃ©rables, Les (1995)",
+"MisÃ©rables, Les (1998)",
+"Misery (1990)",
+"Missing in Action (1984)",
+"Missing in Action 2: The Beginning (1985)",
+"Mission to Mars (2000)",
+"Mission, The (1986)",
+"Mission: Impossible (1996)",
+"Mission: Impossible II (2000)",
+"Mister Roberts (1955)",
+"Mixed Nuts (1994)",
+"Mo' Better Blues (1990)",
+"Mod Squad, The (1999)",
+"Modern Times (1936)",
+"Moll Flanders (1996)",
+"Mommie Dearest (1981)",
+"Mona Lisa (1986)",
+"Money Pit, The (1986)",
+"Money Talks (1997)",
+"Money Train (1995)",
+"Monkey Shines (1988)",
+"Monsieur Verdoux (1947)",
+"Monster, The (Mostro, Il) (1994)",
+"Monty Python and the Holy Grail (1975)",
+"Monty Python's And Now for Something Completely Different (1971)",
+"Monty Python's Life of Brian (1979)",
+"Monument Ave. (1998)",
+"Moonraker (1979)",
+"Moonstruck (1987)",
+"Morning After, The (1986)",
+"Mortal Kombat (1995)",
+"Mortal Kombat: Annihilation (1997)",
+"Mortal Thoughts (1991)",
+"Mosquito Coast, The (1986)",
+"Mother (1996)",
+"Mother Night (1996)",
+"Mouse Hunt (1997)",
+"Mr. & Mrs. Smith (1941)",
+"Mr. Death: The Rise and Fall of Fred A. Leuchter, Jr. (1999)",
+"Mr. Holland's Opus (1995)",
+"Mr. Jealousy (1997)",
+"Mr. Magoo (1997)",
+"Mr. Mom (1983)",
+"Mr. Nice Guy (Yat goh ho yan) (1997)",
+"Mr. Saturday Night (1992)",
+"Mr. Smith Goes to Washington (1939)",
+"Mr. Wonderful (1993)",
+"Mr. Wrong (1996)",
+"Mrs. Brown (a.k.a. Her Majesty, Mrs. Brown) (1997)",
+"Mrs. Dalloway (1997)",
+"Mrs. Doubtfire (1993)",
+"Mrs. Miniver (1942)",
+"Mrs. Parker and the Vicious Circle (1994)",
+"Mrs. Winterbourne (1996)",
+"Much Ado About Nothing (1993)",
+"Mulan (1998)",
+"Mulholland Falls (1996)",
+"Multiplicity (1996)",
+"Mumford (1999)",
+"Mummy, The (1932)",
+"Mummy, The (1959)",
+"Mummy, The (1999)",
+"Muppet Christmas Carol, The (1992)",
+"Muppet Movie, The (1979)",
+"Muppet Treasure Island (1996)",
+"Muppets From Space (1999)",
+"Muppets Take Manhattan, The (1984)",
+"Murder at 1600 (1997)",
+"Murder in the First (1995)",
+"Muriel's Wedding (1994)",
+"Murphy's Romance (1985)",
+"Muse, The (1999)",
+"Music From Another Room (1998)",
+"Music of the Heart (1999)",
+"Mute Witness (1994)",
+"Mutiny on the Bounty (1935)",
+"My Best Fiend (Mein liebster Feind) (1999)",
+"My Best Friend's Wedding (1997)",
+"My Blue Heaven (1990)",
+"My Bodyguard (1980)",
+"My Boyfriend's Back (1993)",
+"My Cousin Vinny (1992)",
+"My Crazy Life (Mi vida loca) (1993)",
+"My Dog Skip (1999)",
+"My Fair Lady (1964)",
+"My Family (1995)",
+"My Favorite Martian (1999)",
+"My Favorite Year (1982)",
+"My Fellow Americans (1996)",
+"My Giant (1998)",
+"My Left Foot (1989)",
+"My Life (1993)",
+"My Life as a Dog (Mitt liv som hund) (1985)",
+"My Life in Pink (Ma vie en rose) (1997)",
+"My Man Godfrey (1936)",
+"My Man Godfrey (1957)",
+"My Name Is Joe (1998)",
+"My Own Private Idaho (1991)",
+"My Science Project (1985)",
+"My Son the Fanatic (1997)",
+"My Tutor (1983)",
+"Mystery Men (1999)",
+"Mystery Science Theater 3000: The Movie (1996)",
+"Mystery Train (1989)",
+"Mystery, Alaska (1999)",
+"Nadine (1987)",
+"Nadja (1994)",
+"Naked (1993)",
+"Naked Gun 2 1/2: The Smell of Fear, The (1991)",
+"Naked Gun 33 1/3: The Final Insult (1994)",
+"Naked Gun: From the Files of Police Squad!, The (1988)",
+"Name of the Rose, The (Name der Rose, Der) (1986)",
+"Nashville (1975)",
+"National Lampoon's Senior Trip (1995)",
+"National Lampoon's Vacation (1983)",
+"Native Son (1986)",
+"Natural Born Killers (1994)",
+"Natural, The (1984)",
+"Near Dark (1987)",
+"Needful Things (1993)",
+"Negotiator, The (1998)",
+"Nell (1994)",
+"Nelly & Monsieur Arnaud (1995)",
+"Net, The (1995)",
+"Network (1976)",
+"Never Been Kissed (1999)",
+"Never Cry Wolf (1983)",
+"NeverEnding Story II: The Next Chapter, The (1990)",
+"NeverEnding Story III, The (1994)",
+"NeverEnding Story, The (1984)",
+"New Jersey Drive (1995)",
+"New Rose Hotel (1998)",
+"New York Cop (NyÃ» YÃ´ku no koppu) (1993)",
+"Newsies (1992)",
+"Newton Boys, The (1998)",
+"Next Best Thing, The (2000)",
+"Next Friday (2000)",
+"Next Karate Kid, The (1994)",
+"Next Stop Wonderland (1998)",
+"Niagara (1953)",
+"Nick of Time (1995)",
+"Nico Icon (1995)",
+"Night at the Roxbury, A (1998)",
+"Night Flier (1997)",
+"'night Mother (1986)",
+"Night of the Comet (1984)",
+"Night of the Creeps (1986)",
+"Night of the Living Dead (1968)",
+"Night on Earth (1991)",
+"Night Porter, The (Portiere di notte, Il) (1974)",
+"Night Shift (1982)",
+"Night to Remember, A (1958)",
+"Nighthawks (1981)",
+"Nightmare Before Christmas, The (1993)",
+"Nightmare on Elm Street 2: Freddy's Revenge, A (1985)",
+"Nightmare on Elm Street 3: Dream Warriors, A (1987)",
+"Nightmare on Elm Street 4: The Dream Master, A (1988)",
+"Nightmare on Elm Street 5: The Dream Child, A (1989)",
+"Nightmare on Elm Street, A (1984)",
+"Nights of Cabiria (Notti di Cabiria, Le) (1957)",
+"Nightwatch (1997)",
+"Nina Takes a Lover (1994)",
+"Nine Months (1995)",
+"Ninotchka (1939)",
+"Ninth Gate, The (1999)",
+"Nixon (1995)",
+"No Escape (1994)",
+"No Mercy (1986)",
+"No Small Affair (1984)",
+"No Way Out (1987)",
+"Nobody Loves Me (Keiner liebt mich) (1994)",
+"Nobody's Fool (1994)",
+"Normal Life (1996)",
+"North (1994)",
+"North by Northwest (1959)",
+"North Dallas Forty (1979)",
+"Nosferatu (Nosferatu, eine Symphonie des Grauens) (1922)",
+"Not One Less (Yi ge dou bu neng shao) (1999)",
+"Nothing But Trouble (1991)",
+"Nothing in Common (1986)",
+"Nothing Personal (1995)",
+"Nothing to Lose (1994)",
+"Notorious (1946)",
+"Notting Hill (1999)",
+"Now and Then (1995)",
+"Nowhere (1997)",
+"Nurse Betty (2000)",
+"Nutty Professor II: The Klumps (2000)",
+"Nutty Professor, The (1963)",
+"Nutty Professor, The (1996)",
+"Object of My Affection, The (1998)",
+"October Sky (1999)",
+"Odd Couple II, The (1998)",
+"Odd Couple, The (1968)",
+"Odessa File, The (1974)",
+"Of Human Bondage (1934)",
+"Of Mice and Men (1992)",
+"Office Space (1999)",
+"Official Story, The (La historia oficial) (1985)",
+"Ogre, The (Unhold, Der) (1996)",
+"Old Man and the Sea, The (1958)",
+"Old Yeller (1957)",
+"Oliver & Company (1988)",
+"Oliver! (1968)",
+"Omega Code, The (1999)",
+"Omega Man, The (1971)",
+"Omen, The (1976)",
+"On Any Sunday (1971)",
+"On Golden Pond (1981)",
+"On Her Majesty's Secret Service (1969)",
+"On the Beach (1959)",
+"On the Ropes (1999)",
+"On the Town (1949)",
+"On the Waterfront (1954)",
+"Once Upon a Time in America (1984)",
+"Once Upon a Time in the West (C'era una volta il West) (1968)",
+"Once Upon a Time... When We Were Colored (1995)",
+"Once Were Warriors (1994)",
+"One Crazy Summer (1986)",
+"One Day in September (1999)",
+"One False Move (1992)",
+"One Fine Day (1996)",
+"One Flew Over the Cuckoo's Nest (1975)",
+"One Tough Cop (1998)",
+"One True Thing (1998)",
+"Onegin (1999)",
+"Only Angels Have Wings (1939)",
+"Only You (1994)",
+"Open Your Eyes (Abre los ojos) (1997)",
+"Operation Dumbo Drop (1995)",
+"Opposite of Sex, The (1998)",
+"Ordinary People (1980)",
+"Orgazmo (1997)",
+"Original Kings of Comedy, The (2000)",
+"Orlando (1992)",
+"Oscar and Lucinda (a.k.a. Oscar & Lucinda) (1997)",
+"Otello (1986)",
+"Othello (1995)",
+"Othello (Tragedy of Othello: The Moor of Venice, The) (1952)",
+"Other Sister, The (1999)",
+"Our Town (1940)",
+"Out of Africa (1985)",
+"Out of Sight (1998)",
+"Out of the Past (1947)",
+"Out to Sea (1997)",
+"Outbreak (1995)",
+"Outlaw Josey Wales, The (1976)",
+"Out-of-Towners, The (1999)",
+"Outrageous Fortune (1987)",
+"Outside Providence (1999)",
+"Outsiders, The (1983)",
+"Overnight Delivery (1998)",
+"Oxygen (1999)",
+"Pacific Heights (1990)",
+"Pagemaster, The (1994)",
+"Pajama Game, The (1957)",
+"Pale Rider (1985)",
+"Pallbearer, The (1996)",
+"Palm Beach Story, The (1942)",
+"Palmetto (1998)",
+"Palookaville (1996)",
+"Paper Chase, The (1973)",
+"Paper, The (1994)",
+"Papillon (1973)",
+"Paradine Case, The (1947)",
+"Paradise Lost: The Child Murders at Robin Hood Hills (1996)",
+"Paradise Road (1997)",
+"Parasite (1982)",
+"Parent Trap, The (1961)",
+"Parent Trap, The (1998)",
+"Parenthood (1989)",
+"Paris Is Burning (1990)",
+"Paris, Texas (1984)",
+"Party Girl (1995)",
+"Passion Fish (1992)",
+"Patch Adams (1998)",
+"Paths of Glory (1957)",
+"Patriot Games (1992)",
+"Patriot, The (2000)",
+"Patton (1970)",
+"Paulie (1998)",
+"Pawnbroker, The (1964)",
+"Pay It Forward (2000)",
+"Payback (1999)",
+"Peacemaker, The (1997)",
+"Pecker (1998)",
+"Peeping Tom (1960)",
+"Pee-wee's Big Adventure (1985)",
+"Peggy Sue Got Married (1986)",
+"Pelican Brief, The (1993)",
+"Penny Serenade (1941)",
+"People vs. Larry Flynt, The (1996)",
+"Perez Family, The (1995)",
+"Perfect Blue (1997)",
+"Perfect Candidate, A (1996)",
+"Perfect Murder, A (1998)",
+"Perfect Storm, The (2000)",
+"Perfect World, A (1993)",
+"Permanent Midnight (1998)",
+"Persuasion (1995)",
+"Pest, The (1997)",
+"Pet Sematary (1989)",
+"Pet Sematary II (1992)",
+"Peter Pan (1953)",
+"Peter's Friends (1992)",
+"Pete's Dragon (1977)",
+"Phantasm (1979)",
+"Phantasm II (1988)",
+"Phantasm III: Lord of the Dead (1994)",
+"Phantasm IV: Oblivion (1998)",
+"Phantom, The (1996)",
+"Phantoms (1998)",
+"Phenomenon (1996)",
+"Philadelphia (1993)",
+"Philadelphia Story, The (1940)",
+"Pi (1998)",
+"Piano, The (1993)",
+"Picnic (1955)",
+"Picnic at Hanging Rock (1975)",
+"Picture Bride (Bijo photo) (1994)",
+"Picture Perfect (1997)",
+"Pie in the Sky (1996)",
+"Pillow Book, The (1996)",
+"Pink Flamingos (1972)",
+"Pink Floyd: The Wall (1982)",
+"Pinocchio (1940)",
+"Piranha (1978)",
+"Pit and the Pendulum (1961)",
+"Pitch Black (2000)",
+"Place in the Sun, A (1951)",
+"Places in the Heart (1984)",
+"Plan 9 from Outer Space (1959)",
+"Planes, Trains & Automobiles (1987)",
+"Planet of the Apes (1968)",
+"Platoon (1986)",
+"Player, The (1992)",
+"Playing by Heart (1998)",
+"Playing God (1997)",
+"Pleasantville (1998)",
+"Plunkett & MaCleane (1999)",
+"Pocahontas (1995)",
+"Poetic Justice (1993)",
+"Poison Ivy (1992)",
+"Poison Ivy II (1996)",
+"Poison Ivy: New Seduction (1997)",
+"PokÃ©mon the Movie 2000 (2000)",
+"PokÃ©mon: The First Movie (1998)",
+"Police Academy (1984)",
+"Police Academy 2: Their First Assignment (1985)",
+"Police Academy 3: Back in Training (1986)",
+"Police Academy 4: Citizens on Patrol (1987)",
+"Police Academy 5: Assignment: Miami Beach (1988)",
+"Police Academy 6: City Under Siege (1989)",
+"Polish Wedding (1998)",
+"Pollyanna (1960)",
+"Poltergeist (1982)",
+"Poltergeist II: The Other Side (1986)",
+"Poltergeist III (1988)",
+"Pompatus of Love, The (1996)",
+"Ponette (1996)",
+"Pope of Greenwich Village, The (1984)",
+"Popeye (1980)",
+"Pork Chop Hill (1959)",
+"Porky's (1982)",
+"Porky's II: The Next Day (1983)",
+"Porky's Revenge (1985)",
+"Portrait of a Lady, The (1996)",
+"Poseidon Adventure, The (1972)",
+"Postman Always Rings Twice, The (1981)",
+"Postman, The (1997)",
+"Postman, The (Postino, Il) (1994)",
+"Powder (1995)",
+"Practical Magic (1998)",
+"Prancer (1989)",
+"Preacher's Wife, The (1996)",
+"Predator (1987)",
+"Predator 2 (1990)",
+"Prefontaine (1997)",
+"Presidio, The (1988)",
+"Pretty in Pink (1986)",
+"Pretty Woman (1990)",
+"Priest (1994)",
+"Primal Fear (1996)",
+"Primary Colors (1998)",
+"Prince of Egypt, The (1998)",
+"Prince of Tides, The (1991)",
+"Princess Bride, The (1987)",
+"Princess Caraboo (1994)",
+"Princess Mononoke (Mononoke-hime) (1997)",
+"Private Benjamin (1980)",
+"Private Eyes, The (1981)",
+"Private Parts (1997)",
+"Private School (1983)",
+"Prizzi's Honor (1985)",
+"Problem Child (1990)",
+"Problem Child 2 (1991)",
+"Producers, The (1968)",
+"Program, The (1993)",
+"Prom Night (1980)",
+"Prom Night IV: Deliver Us From Evil (1992)",
+"Promise, The (La promesse) (1996)",
+"Proof of Life (2000)",
+"Prophecy, The (1995)",
+"Psycho (1960)",
+"Psycho (1998)",
+"Psycho Beach Party (2000)",
+"Psycho II (1983)",
+"Psycho III (1986)",
+"Pulp Fiction (1994)",
+"Pump Up the Volume (1990)",
+"Pumpkinhead (1988)",
+"Punchline (1988)",
+"Puppet Master (1989)",
+"Puppet Master 4 (1993)",
+"Puppet Master 5: The Final Chapter (1994)",
+"Puppet Master II (1991)",
+"Puppet Master III: Toulon's Revenge (1991)",
+"Puppet Masters, The (1994)",
+"Purple Rose of Cairo, The (1985)",
+"Pushing Hands (Tui shou) (1992)",
+"Pushing Tin (1999)",
+"Pyromaniac's Love Story, A (1995)",
+"Quatermass and the Pit (1967)",
+"Queen Margot (Reine Margot, La) (1994)",
+"Quest for Camelot (1998)",
+"Quest for Fire (Guerre du feu, La) (1981)",
+"Quest, The (1996)",
+"Quick and the Dead, The (1995)",
+"Quiet Man, The (1952)",
+"Quills (2000)",
+"Quiz Show (1994)",
+"Radio Days (1987)",
+"Radioland Murders (1994)",
+"Rage: Carrie 2, The (1999)",
+"Raging Bull (1980)",
+"Raiders of the Lost Ark (Indiana Jones and the Raiders of the Lost Ark) (1981)",
+"Rain Man (1988)",
+"Raining Stones (1993)",
+"Rainmaker, The (1997)",
+"Raise the Red Lantern (Da hong deng long gao gao gua) (1991)",
+"Raise the Titanic (1980)",
+"Raisin in the Sun, A (1961)",
+"Raising Arizona (1987)",
+"Rambo III (1988)",
+"Rambo: First Blood Part II (1985)",
+"Ran (1985)",
+"Random Hearts (1999)",
+"Ransom (1996)",
+"Rapture, The (1991)",
+"Ravenous (1999)",
+"Rawhead Rex (1986)",
+"Razor's Edge, The (1984)",
+"Ready to Rumble (2000)",
+"Ready to Wear (Pret-A-Porter) (1994)",
+"Real Blonde, The (1997)",
+"Real Genius (1985)",
+"Reality Bites (1994)",
+"Re-Animator (1985)",
+"Rear Window (1954)",
+"Rebecca (1940)",
+"Rebel Without a Cause (1955)",
+"Reckless (1995)",
+"Red Corner (1997)",
+"Red Dawn (1984)",
+"Red Planet (2000)",
+"Red Rock West (1992)",
+"Red Sonja (1985)",
+"Red Sorghum (Hong gao liang) (1987)",
+"Red Violin, The (Violon rouge, Le) (1998)",
+"Reds (1981)",
+"Ref, The (1994)",
+"Regret to Inform (1998)",
+"Reindeer Games (2000)",
+"Relative Fear (1994)",
+"Relic, The (1997)",
+"Remains of the Day, The (1993)",
+"Remember the Titans (2000)",
+"Renaissance Man (1994)",
+"Rent-A-Cop (1988)",
+"Rent-a-Kid (1995)",
+"Replacement Killers, The (1998)",
+"Replacements, The (2000)",
+"Repo Man (1984)",
+"Repossessed (1990)",
+"Repulsion (1965)",
+"Requiem for a Dream (2000)",
+"Rescuers Down Under, The (1990)",
+"Rescuers, The (1977)",
+"Reservoir Dogs (1992)",
+"Restoration (1995)",
+"Retroactive (1997)",
+"Return from Witch Mountain (1978)",
+"Return of Jafar, The (1994)",
+"Return of Martin Guerre, The (Retour de Martin Guerre, Le) (1982)",
+"Return of the Pink Panther, The (1975)",
+"Return to Me (2000)",
+"Return to Oz (1985)",
+"Return to Paradise (1998)",
+"Return with Honor (1998)",
+"Richard III (1995)",
+"Richie Rich (1994)",
+"Ride with the Devil (1999)",
+"Ridicule (1996)",
+"Right Stuff, The (1983)",
+"Ring, The (1927)",
+"Rising Sun (1993)",
+"Risky Business (1983)",
+"River Runs Through It, A (1992)",
+"River Wild, The (1994)",
+"River, The (1984)",
+"Road to El Dorado, The (2000)",
+"Road to Wellville, The (1994)",
+"Road Trip (2000)",
+"Road Warrior, The (Mad Max 2) (1981)",
+"Rob Roy (1995)",
+"Robin Hood (1973)",
+"Robin Hood: Men in Tights (1993)",
+"Robin Hood: Prince of Thieves (1991)",
+"RoboCop (1987)",
+"RoboCop 2 (1990)",
+"RoboCop 3 (1993)",
+"Rock, The (1996)",
+"Rocketeer, The (1991)",
+"RocketMan (a.k.a. Rocket Man) (1997)",
+"Rocky (1976)",
+"Rocky Horror Picture Show, The (1975)",
+"Rocky II (1979)",
+"Rocky III (1982)",
+"Rocky IV (1985)",
+"Rocky V (1990)",
+"Roger & Me (1989)",
+"Rollercoaster (1977)",
+"Roman Holiday (1953)",
+"Romance (1999)",
+"Romancing the Stone (1984)",
+"Romeo and Juliet (1968)",
+"Romeo Is Bleeding (1993)",
+"Romeo Must Die (2000)",
+"Romper Stomper (1992)",
+"Romy and Michele's High School Reunion (1997)",
+"Ronin (1998)",
+"Room at the Top (1959)",
+"Room with a View, A (1986)",
+"Roommates (1995)",
+"Rope (1948)",
+"Rosemary's Baby (1968)",
+"Rosencrantz and Guildenstern Are Dead (1990)",
+"Rosetta (1999)",
+"Rosewood (1997)",
+"Rough Magic (1995)",
+"Rounders (1998)",
+"Ruby in Paradise (1993)",
+"Rudy (1993)",
+"Rugrats in Paris: The Movie (2000)",
+"Rugrats Movie, The (1998)",
+"Rules of Engagement (2000)",
+"Ruling Class, The (1972)",
+"Rumble in the Bronx (Hont faan kui) (1995)",
+"Run Lola Run (Lola rennt) (1998)",
+"Run of the Country, The (1995)",
+"Run Silent Run Deep (1958)",
+"Runaway (1984)",
+"Runaway Bride (1999)",
+"Runaway Train (1985)",
+"Running Man, The (1987)",
+"Running Scared (1986)",
+"Rush Hour (1998)",
+"Rushmore (1998)",
+"Ruthless People (1986)",
+"S.F.W. (1994)",
+"Sabotage (1936)",
+"Saboteur (1942)",
+"Sabrina (1954)",
+"Sabrina (1995)",
+"Safe (1995)",
+"Saint, The (1997)",
+"Sandpiper, The (1965)",
+"Sanjuro (Tsubaki SanjÃ»rÃ´) (1962)",
+"Santa Claus: The Movie (1985)",
+"Santa Clause, The (1994)",
+"Sarafina! (1992)",
+"Saragossa Manuscript, The (Rekopis znaleziony w Saragossie) (1965)",
+"Saturn 3 (1980)",
+"Savage Nights (Nuits fauves, Les) (1992)",
+"Saving Grace (2000)",
+"Saving Private Ryan (1998)",
+"Savior (1998)",
+"Say Anything... (1989)",
+"Scarlet Letter, The (1995)",
+"Scary Movie (2000)",
+"Scent of a Woman (1992)",
+"Schindler's List (1993)",
+"Schizopolis (1996)",
+"School Daze (1988)",
+"School of Flesh, The (Ã‰cole de la chair, L') (1998)",
+"Scout, The (1994)",
+"Scream (1996)",
+"Scream 2 (1997)",
+"Scream 3 (2000)",
+"Screamers (1995)",
+"Screwed (2000)",
+"Scrooged (1988)",
+"Searchers, The (1956)",
+"Searching for Bobby Fischer (1993)",
+"Secret Agent (1936)",
+"Secret Agent, The (1996)",
+"Secret Garden, The (1993)",
+"Secret of NIMH, The (1982)",
+"Secret of Roan Inish, The (1994)",
+"Secrets & Lies (1996)",
+"Selena (1997)",
+"Sense and Sensibility (1995)",
+"Senseless (1998)",
+"Serial Mom (1994)",
+"Serpico (1973)",
+"Set It Off (1996)",
+"Seven (a.k.a. Se7en) (1995)",
+"Seven Days in May (1964)",
+"Seven Samurai (Shichinin no samurai) (1954)",
+"Seven Years in Tibet (1997)",
+"Seventh Seal, The (Sjunde inseglet, Det) (1957)",
+"Seventh Sign, The (1988)",
+"Sex, Lies, and Videotape (1989)",
+"Sgt. Bilko (1996)",
+"Shadow Conspiracy (1997)",
+"Shadow of a Doubt (1943)",
+"Shadow, The (1994)",
+"Shadowlands (1993)",
+"Shaft (1971)",
+"Shaft (2000)",
+"Shaggy D.A., The (1976)",
+"Shaggy Dog, The (1959)",
+"Shakes the Clown (1992)",
+"Shakespeare in Love (1998)",
+"Shall We Dance (1937)",
+"Shall We Dance? (Shall We Dansu?) (1996)",
+"Shallow Grave (1994)",
+"Shampoo (1975)",
+"Shane (1953)",
+"Shanghai Noon (2000)",
+"Shanghai Surprise (1986)",
+"Shanghai Triad (Yao a yao yao dao waipo qiao) (1995)",
+"Shawshank Redemption, The (1994)",
+"She-Devil (1989)",
+"Sheltering Sky, The (1990)",
+"She's All That (1999)",
+"She's Gotta Have It (1986)",
+"She's Having a Baby (1988)",
+"She's So Lovely (1997)",
+"She's the One (1996)",
+"Shiloh (1997)",
+"Shine (1996)",
+"Shining, The (1980)",
+"Shooting Fish (1997)",
+"Shop Around the Corner, The (1940)",
+"Short Cuts (1993)",
+"Shower (Xizao) (1999)",
+"Showgirls (1995)",
+"Sid and Nancy (1986)",
+"Siege, The (1998)",
+"Silence of the Lambs, The (1991)",
+"Simon Birch (1998)",
+"Simon Sez (1999)",
+"Simpatico (1999)",
+"Simple Plan, A (1998)",
+"Simple Twist of Fate, A (1994)",
+"Simple Wish, A (1997)",
+"Simply Irresistible (1999)",
+"Sinbad and the Eye of the Tiger (1977)",
+"Singin' in the Rain (1952)",
+"Single Girl, A (Fille seule, La) (1995)",
+"Single White Female (1992)",
+"Singles (1992)",
+"Sirens (1994)",
+"Sister Act (1992)",
+"Sister Act 2: Back in the Habit (1993)",
+"Six Days Seven Nights (1998)",
+"Six Degrees of Separation (1993)",
+"Six-String Samurai (1998)",
+"Sixteen Candles (1984)",
+"Sixth Sense, The (1999)",
+"Skipped Parts (2000)",
+"Skulls, The (2000)",
+"SLC Punk! (1998)",
+"Sleepaway Camp (1983)",
+"Sleeper (1973)",
+"Sleepers (1996)",
+"Sleeping Beauty (1959)",
+"Sleepless in Seattle (1993)",
+"Sleepwalkers (1992)",
+"Sleepy Hollow (1999)",
+"Sliding Doors (1998)",
+"Sling Blade (1996)",
+"Sliver (1993)",
+"Slumber Party Massacre II (1987)",
+"Slumber Party Massacre III (1990)",
+"Slumber Party Massacre, The (1982)",
+"Slums of Beverly Hills, The (1998)",
+"Small Soldiers (1998)",
+"Small Time Crooks (2000)",
+"Smiling Fish and Goat on Fire (1999)",
+"Smilla's Sense of Snow (1997)",
+"Smoke (1995)",
+"Smoke Signals (1998)",
+"Snake Eyes (1998)",
+"Snatch (2000)",
+"Sneakers (1992)",
+"Snow Day (2000)",
+"Snow Falling on Cedars (1999)",
+"Snow White and the Seven Dwarfs (1937)",
+"So I Married an Axe Murderer (1993)",
+"Soapdish (1991)",
+"Soft Fruit (1999)",
+"Solaris (Solyaris) (1972)",
+"Solas (1999)",
+"Soldier (1998)",
+"Soldier's Story, A (1984)",
+"Solo (1996)",
+"Some Folks Call It a Sling Blade (1993)",
+"Some Kind of Wonderful (1987)",
+"Some Like It Hot (1959)",
+"Some Mother's Son (1996)",
+"Somebody to Love (1994)",
+"Someone to Watch Over Me (1987)",
+"Something to Talk About (1995)",
+"Something Wicked This Way Comes (1983)",
+"Somewhere in Time (1980)",
+"Sommersby (1993)",
+"Son in Law (1993)",
+"Son of Flubber (1963)",
+"Son of the Sheik, The (1926)",
+"Song of the Little Road (Pather Panchali) (1955)",
+"Song of the South (1946)",
+"Sophie's Choice (1982)",
+"Sorority House Massacre (1986)",
+"Sorority House Massacre II (1990)",
+"Soul Food (1997)",
+"Soul Man (1986)",
+"Sound of Music, The (1965)",
+"Source, The (1999)",
+"South Pacific (1958)",
+"South Park: Bigger, Longer and Uncut (1999)",
+"Soylent Green (1973)",
+"Space Cowboys (2000)",
+"Space Jam (1996)",
+"Spaceballs (1987)",
+"Spanish Prisoner, The (1997)",
+"Spanking the Monkey (1994)",
+"Spartacus (1960)",
+"Spawn (1997)",
+"Specialist, The (1994)",
+"Species (1995)",
+"Species II (1998)",
+"Speechless (1994)",
+"Speed (1994)",
+"Speed 2: Cruise Control (1997)",
+"Spellbound (1945)",
+"Sphere (1998)",
+"Spice World (1997)",
+"Spirits of the Dead (1968)",
+"Spitfire Grill, The (1996)",
+"Splash (1984)",
+"Splendor in the Grass (1961)",
+"Spy Hard (1996)",
+"Spy Who Loved Me, The (1977)",
+"St. Elmo's Fire (1985)",
+"Stage Fright (1950)",
+"Stalag 17 (1953)",
+"Stalingrad (1993)",
+"Stalker (1979)",
+"Stand and Deliver (1988)",
+"Stand by Me (1986)",
+"Stanley & Iris (1990)",
+"Star Is Born, A (1937)",
+"Star Maps (1997)",
+"Star Trek II: The Wrath of Khan (1982)",
+"Star Trek III: The Search for Spock (1984)",
+"Star Trek IV: The Voyage Home (1986)",
+"Star Trek V: The Final Frontier (1989)",
+"Star Trek VI: The Undiscovered Country (1991)",
+"Star Trek: First Contact (1996)",
+"Star Trek: Generations (1994)",
+"Star Trek: Insurrection (1998)",
+"Star Trek: The Motion Picture (1979)",
+"Star Wars: Episode I - The Phantom Menace (1999)",
+"Star Wars: Episode IV - A New Hope (1977)",
+"Star Wars: Episode V - The Empire Strikes Back (1980)",
+"Star Wars: Episode VI - Return of the Jedi (1983)",
+"Stardust Memories (1980)",
+"Stargate (1994)",
+"Starman (1984)",
+"Starship Troopers (1997)",
+"Stay Tuned (1992)",
+"Steal Big, Steal Little (1995)",
+"Stealing Beauty (1996)",
+"Stealing Home (1988)",
+"Steam: The Turkish Bath (Hamam) (1997)",
+"Steamboat Willie (1928)",
+"Steel (1997)",
+"Steel Magnolias (1989)",
+"Stepford Wives, The (1975)",
+"Stepmom (1998)",
+"Stigmata (1999)",
+"Still Crazy (1998)",
+"Sting, The (1973)",
+"Stir of Echoes (1999)",
+"Stop Making Sense (1984)",
+"Stop! Or My Mom Will Shoot (1992)",
+"Story of Us, The (1999)",
+"Straight Story, The (1999)",
+"Strange Days (1995)",
+"Strange Love of Martha Ivers, The (1946)",
+"Strangeland (1998)",
+"Stranger in the House (1997)",
+"Stranger Than Paradise (1984)",
+"Strangers on a Train (1951)",
+"Strawberry and Chocolate (Fresa y chocolate) (1993)",
+"Street Fighter (1994)",
+"Streetcar Named Desire, A (1951)",
+"Strictly Ballroom (1992)",
+"Strike! (a.k.a. All I Wanna Do, The Hairy Bird) (1998)",
+"Striking Distance (1993)",
+"Stripes (1981)",
+"Striptease (1996)",
+"Stuart Little (1999)",
+"Stuart Saves His Family (1995)",
+"Stupids, The (1996)",
+"Substitute, The (1996)",
+"SubUrbia (1997)",
+"Sudden Death (1995)",
+"Suddenly, Last Summer (1959)",
+"Sugar Town (1999)",
+"Sugarland Express, The (1974)",
+"Suicide Kings (1997)",
+"Sullivan's Travels (1941)",
+"Sum of Us, The (1994)",
+"Summer of Sam (1999)",
+"Sunset Blvd. (a.k.a. Sunset Boulevard) (1950)",
+"Sunset Park (1996)",
+"Sunshine (1999)",
+"Super Mario Bros. (1993)",
+"Supercop (Police Story 3: Supercop) (Jing cha gu shi III: Chao ji jing cha) (1992)",
+"Supercop 2 (Project S) (Chao ji ji hua) (1993)",
+"Supergirl (1984)",
+"Superman (1978)",
+"Superman II (1980)",
+"Superman III (1983)",
+"Superman IV: The Quest for Peace (1987)",
+"Supernova (2000)",
+"Superstar (1999)",
+"Surf Nazis Must Die (1987)",
+"Surviving the Game (1994)",
+"Suspicion (1941)",
+"Suture (1993)",
+"Swamp Thing (1982)",
+"Swan Princess, The (1994)",
+"Sweet and Lowdown (1999)",
+"Sweet Hereafter, The (1997)",
+"Swept Away (Travolti da un insolito destino nell'azzurro mare d'Agosto) (1975)",
+"Swept from the Sea (1997)",
+"Swimming with Sharks (1995)",
+"Swing Kids (1993)",
+"Swingers (1996)",
+"Swiss Family Robinson (1960)",
+"Switchback (1997)",
+"Sword in the Stone, The (1963)",
+"Sydney (Hard Eight) (1996)",
+"Take the Money and Run (1969)",
+"Taking of Pelham One Two Three, The (1974)",
+"Talented Mr. Ripley, The (1999)",
+"Tales from the Crypt Presents: Bordello of Blood (1996)",
+"Tales from the Crypt Presents: Demon Knight (1995)",
+"Tales from the Darkside: The Movie (1990)",
+"Tales from the Hood (1995)",
+"Talk Radio (1988)",
+"Tall Tale (1995)",
+"Taming of the Shrew, The (1967)",
+"Tampopo (1985)",
+"Tango (1998)",
+"Tank Girl (1995)",
+"Tao of Steve, The (2000)",
+"Tarantula (1955)",
+"Tarzan (1999)",
+"Tarzan and the Lost City (1998)",
+"Taste of Cherry (Ta'm e guilass) (1997)",
+"Taxi Driver (1976)",
+"Tea with Mussolini (1999)",
+"Teaching Mrs. Tingle (1999)",
+"Teenage Mutant Ninja Turtles (1990)",
+"Teenage Mutant Ninja Turtles II: The Secret of the Ooze (1991)",
+"Teenage Mutant Ninja Turtles III (1993)",
+"Temptress Moon (Feng Yue) (1996)",
+"Tender Mercies (1983)",
+"Tequila Sunrise (1988)",
+"Terminal Velocity (1994)",
+"Terminator 2: Judgment Day (1991)",
+"Terminator, The (1984)",
+"Terms of Endearment (1983)",
+"Terrorist, The (a.k.a. Malli) (Theeviravaathi) (1998)",
+"Tex (1982)",
+"Texas Chainsaw Massacre 2, The (1986)",
+"Texas Chainsaw Massacre, The (1974)",
+"Texas Chainsaw Massacre: The Next Generation (a.k.a. The Return of the Texas Chainsaw Massacre) (1994)",
+"That Darn Cat (1997)",
+"That Darn Cat! (1965)",
+"That Thing You Do! (1996)",
+"The Devil's Advocate (1997)",
+"The Falcon and the Snowman (1985)",
+"The Golden Voyage of Sinbad (1973)",
+"The Hunger (1983)",
+"The Idolmaker (1980)",
+"The Players Club (1998)",
+"The Spiral Staircase (1945)",
+"The Year My Voice Broke (1987)",
+"Thelma & Louise (1991)",
+"Them! (1954)",
+"Theodore Rex (1995)",
+"There's Something About Mary (1998)",
+"They Might Be Giants (1971)",
+"They Shoot Horses, Don't They? (1969)",
+"Thieves (Voleurs, Les) (1996)",
+"Thin Blue Line, The (1988)",
+"Thin Line Between Love and Hate, A (1996)",
+"Thin Man, The (1934)",
+"Thin Red Line, The (1998)",
+"Thing from Another World, The (1951)",
+"Thing, The (1982)",
+"Things to Do in Denver When You're Dead (1995)",
+"Thinner (1996)",
+"Third Man, The (1949)",
+"Third Miracle, The (1999)",
+"Thirteenth Floor, The (1999)",
+"Thirty-Two Short Films About Glenn Gould (1993)",
+"This Is My Father (1998)",
+"This Is Spinal Tap (1984)",
+"This World, Then the Fireworks (1997)",
+"Thomas Crown Affair, The (1968)",
+"Thomas Crown Affair, The (1999)",
+"Thousand Acres, A (1997)",
+"Three Caballeros, The (1945)",
+"Three Colors: Blue (Trois couleurs: Bleu) (1993)",
+"Three Colors: Red (Trois couleurs: Rouge) (1994)",
+"Three Colors: White (Trzy kolory: Bialy) (1994)",
+"Three Days of the Condor (3 Days of the Condor) (1975)",
+"Three Kings (1999)",
+"Three Musketeers, The (1993)",
+"Three to Tango (1999)",
+"Three Wishes (1995)",
+"Threesome (1994)",
+"Thumbelina (1994)",
+"Thunderball (1965)",
+"Thunderbolt and Lightfoot (1974)",
+"Tie Me Up! Tie Me Down! (Â¡Ãtame!) (1990)",
+"Tigerland (2000)",
+"Tigger Movie, The (2000)",
+"'Til There Was You (1997)",
+"Time Bandits (1981)",
+"Time Code (2000)",
+"Time Machine, The (1960)",
+"Time Masters (MaÃ®tres du temps, Les) (1982)",
+"Time of the Gypsies (Dom za vesanje) (1989)",
+"Time to Kill, A (1996)",
+"Timecop (1994)",
+"Tin Cup (1996)",
+"Tin Drum, The (Blechtrommel, Die) (1979)",
+"Tin Men (1987)",
+"Titan A.E. (2000)",
+"Titanic (1953)",
+"Titanic (1997)",
+"Titus (1999)",
+"To Be or Not to Be (1942)",
+"To Catch a Thief (1955)",
+"To Die For (1995)",
+"To Gillian on Her 37th Birthday (1996)",
+"To Kill a Mockingbird (1962)",
+"To Live (Huozhe) (1994)",
+"To Sir with Love (1967)",
+"To Wong Foo, Thanks for Everything! Julie Newmar (1995)",
+"Tom & Viv (1994)",
+"Tom and Huck (1995)",
+"Tom Jones (1963)",
+"Tombstone (1993)",
+"Tommy (1975)",
+"Tommy Boy (1995)",
+"Tomorrow Never Dies (1997)",
+"Top Gun (1986)",
+"Top Hat (1935)",
+"Topaz (1969)",
+"Topsy-Turvy (1999)",
+"Tora! Tora! Tora! (1970)",
+"Torn Curtain (1966)",
+"Total Eclipse (1995)",
+"Total Recall (1990)",
+"Touch (1997)",
+"Touch of Evil (1958)",
+"Tough Guys (1986)",
+"Touki Bouki (1973)",
+"Towering Inferno, The (1974)",
+"Toxic Avenger Part III: The Last Temptation of Toxie, The (1989)",
+"Toxic Avenger, Part II, The (1989)",
+"Toxic Avenger, The (1985)",
+"Toy Story (1995)",
+"Toy Story 2 (1999)",
+"Toys (1992)",
+"Trading Places (1983)",
+"Train of Life (Train de vie) (1998)",
+"Trainspotting (1996)",
+"Transformers: The Movie (1986)",
+"Treasure of the Sierra Madre, The (1948)",
+"Trees Lounge (1996)",
+"Trekkies (1997)",
+"Trial and Error (1997)",
+"Trigger Effect, The (1996)",
+"Trip to Bountiful, The (1985)",
+"Trippin' (1999)",
+"Tron (1982)",
+"Trouble in Paradise (1932)",
+"Trouble with Harry, The (1955)",
+"True Crime (1996)",
+"True Crime (1999)",
+"True Grit (1969)",
+"True Lies (1994)",
+"True Romance (1993)",
+"Truman Show, The (1998)",
+"Trust (1990)",
+"Truth About Cats & Dogs, The (1996)",
+"Turbo: A Power Rangers Movie (1997)",
+"Turbulence (1997)",
+"Turtle Diary (1985)",
+"Twelfth Night (1996)",
+"Twelve Chairs, The (1970)",
+"Twelve Monkeys (a.k.a. 12 Monkeys) (1995)",
+"Twilight (1998)",
+"Twin Dragons (Shuang long hui) (1992)",
+"Twin Falls Idaho (1999)",
+"Twin Peaks: Fire Walk with Me (1992)",
+"Twister (1996)",
+"Two Family House (2000)",
+"Two Girls and a Guy (1997)",
+"Two if by Sea (1996)",
+"Two Jakes, The (1990)",
+"Two Moon Junction (1988)",
+"Two Much (1995)",
+"Two Women (Ciociara, La) (1960)",
+"U Turn (1997)",
+"U.S. Marshals (1998)",
+"U2: Rattle and Hum (1988)",
+"U-571 (2000)",
+"Ugly, The (1997)",
+"Ulee's Gold (1997)",
+"Umbrellas of Cherbourg, The (Parapluies de Cherbourg, Les) (1964)",
+"Unbearable Lightness of Being, The (1988)",
+"Unbreakable (2000)",
+"Under Siege (1992)",
+"Under Siege 2: Dark Territory (1995)",
+"Under Suspicion (2000)",
+"Under the Rainbow (1981)",
+"Underground (1995)",
+"Underneath (1995)",
+"Underworld (1996)",
+"Unforgettable (1996)",
+"Unforgettable Summer, An (Un Ã©tÃ© inoubliable) (1994)",
+"Unforgiven (1992)",
+"Universal Soldier (1992)",
+"Universal Soldier: The Return (1999)",
+"Unsinkable Molly Brown, The (1964)",
+"Unstrung Heroes (1995)",
+"Until the End of the World (Bis ans Ende der Welt) (1991)",
+"Untouchables, The (1987)",
+"Unzipped (1995)",
+"Up at the Villa (2000)",
+"Up Close and Personal (1996)",
+"Urban Legend (1998)",
+"Urban Legends: Final Cut (2000)",
+"Usual Suspects, The (1995)",
+"Vagabond (Sans toit ni loi) (1985)",
+"Vampire in Brooklyn (1995)",
+"Vampire in Venice (Nosferatu a Venezia) (Nosferatu in Venice) (1986)",
+"Vampires (1998)",
+"Vanya on 42nd Street (1994)",
+"Varsity Blues (1999)",
+"Vegas Vacation (National Lampoon's Las Vegas Vacation) (1997)",
+"Velvet Goldmine (1998)",
+"Verdict, The (1982)",
+"Vertical Limit (2000)",
+"Vertigo (1958)",
+"Very Bad Things (1998)",
+"Very Brady Sequel, A (1996)",
+"Vibes (1988)",
+"Victor/Victoria (1982)",
+"View to a Kill, A (1985)",
+"Village of the Damned (1960)",
+"Village of the Damned (1995)",
+"Violets Are Blue... (1986)",
+"Virgin Suicides, The (1999)",
+"Virtuosity (1995)",
+"Virus (1999)",
+"Visitors, The (Visiteurs, Les) (1993)",
+"Volcano (1997)",
+"Volunteers (1985)",
+"Voyage to the Bottom of the Sea (1961)",
+"Wag the Dog (1997)",
+"Waiting for Guffman (1996)",
+"Waiting to Exhale (1995)",
+"Waking Ned Devine (a.k.a. Waking Ned) (1998)",
+"Walk in the Clouds, A (1995)",
+"Walk on the Moon, A (1999)",
+"Walkabout (1971)",
+"Walking and Talking (1996)",
+"Walking Dead, The (1995)",
+"Wall Street (1987)",
+"Wallace & Gromit: A Close Shave (1995)",
+"Wallace & Gromit: The Best of Aardman Animation (1996)",
+"Wallace & Gromit: The Wrong Trousers (1993)",
+"War of the Worlds, The (1953)",
+"War Room, The (1993)",
+"War Zone, The (1999)",
+"War, The (1994)",
+"Washington Square (1997)",
+"Watcher, The (2000)",
+"Waterboy, The (1998)",
+"Watership Down (1978)",
+"Waterworld (1995)",
+"Way of the Gun, The (2000)",
+"Way We Were, The (1973)",
+"Wayne's World (1992)",
+"Wayne's World 2 (1993)",
+"Wedding Singer, The (1998)",
+"Weekend at Bernie's (1989)",
+"Weird Science (1985)",
+"Welcome to Sarajevo (1997)",
+"Welcome to the Dollhouse (1995)",
+"Welcome to Woop-Woop (1997)",
+"We're Back! A Dinosaur's Story (1993)",
+"We're No Angels (1989)",
+"Wes Craven's New Nightmare (Nightmare on Elm Street Part 7: Freddy's Finale, A) (1994)",
+"West Beirut (West Beyrouth) (1998)",
+"West Side Story (1961)",
+"Westworld (1973)",
+"What About Bob? (1991)",
+"What Dreams May Come (1998)",
+"What Ever Happened to Baby Jane? (1962)",
+"What Happened Was... (1994)",
+"What Lies Beneath (2000)",
+"What Planet Are You From? (2000)",
+"Whatever (1998)",
+"Whatever It Takes (2000)",
+"What's Eating Gilbert Grape (1993)",
+"What's Love Got to Do with It? (1993)",
+"When a Man Loves a Woman (1994)",
+"When Harry Met Sally... (1989)",
+"When Night Is Falling (1995)",
+"When the Cat's Away (Chacun cherche son chat) (1996)",
+"When We Were Kings (1996)",
+"Where the Buffalo Roam (1980)",
+"Where the Heart Is (2000)",
+"Where the Money Is (2000)",
+"Where's Marlowe? (1998)",
+"While You Were Sleeping (1995)",
+"Whipped (2000)",
+"White Balloon, The (Badkonake sefid) (1995)",
+"White Christmas (1954)",
+"White Man's Burden (1995)",
+"White Men Can't Jump (1992)",
+"White Sands (1992)",
+"White Squall (1996)",
+"Who Framed Roger Rabbit? (1988)",
+"Whole Nine Yards, The (2000)",
+"Whole Wide World, The (1996)",
+"Who's Afraid of Virginia Woolf? (1966)",
+"Who's Harry Crumb? (1989)",
+"Who's That Girl? (1987)",
+"Why Do Fools Fall In Love? (1998)",
+"Wide Awake (1998)",
+"Widows' Peak (1994)",
+"Wild America (1997)",
+"Wild Bill (1995)",
+"Wild Bunch, The (1969)",
+"Wild Reeds (Les roseaux sauvages) (1994)",
+"Wild Things (1998)",
+"Wild Wild West (1999)",
+"William Shakespeare's A Midsummer Night's Dream (1999)",
+"William Shakespeare's Romeo + Juliet (1996)",
+"Willow (1988)",
+"Willy Wonka & the Chocolate Factory (1971)",
+"Wing Commander (1999)",
+"Wings of Desire (Himmel Ã¼ber Berlin, Der) (1987)",
+"Wings of the Dove, The (1997)",
+"Winnie the Pooh and the Blustery Day (1968)",
+"Winslow Boy, The (1999)",
+"Wisdom (1986)",
+"Wishmaster (1997)",
+"With Honors (1994)",
+"Withnail & I (1987)",
+"Witness (1985)",
+"Wizard of Oz, The (1939)",
+"Wolf (1994)",
+"Wolf Man, The (1941)",
+"Woman in the Dunes (Suna no onna) (1964)",
+"Woman of Paris, A (1923)",
+"Woman on Top (2000)",
+"Women on the Verge of a Nervous Breakdown (Mujeres al borde de un ataque de nervios) (1988)",
+"Women, The (1939)",
+"Wonder Boys (2000)",
+"Wonderful, Horrible Life of Leni Riefenstahl, The (Macht der Bilder: Leni Riefenstahl, Die) (1993)",
+"Wonderland (1999)",
+"Working Girl (1988)",
+"World Is Not Enough, The (1999)",
+"World of Apu, The (Apur Sansar) (1959)",
+"Wrong Man, The (1956)",
+"Wrongfully Accused (1998)",
+"Wyatt Earp (1994)",
+"X-Files: Fight the Future, The (1998)",
+"X-Men (2000)",
+"Yards, The (2000)",
+"Year of Living Dangerously, The (1982)",
+"Year of the Horse (1997)",
+"Yellow Submarine (1968)",
+"Yojimbo (1961)",
+"You Can Count on Me (2000)",
+"You Can't Take It with You (1938)",
+"Young Doctors in Love (1982)",
+"Young Frankenstein (1974)",
+"Young Guns (1988)",
+"Young Guns II (1990)",
+"Young Poisoner's Handbook, The (1995)",
+"Young Sherlock Holmes (1985)",
+"Your Friends and Neighbors (1998)",
+"You've Got Mail (1998)",
+"Zed & Two Noughts, A (1985)",
+"Zero Effect (1998)",
+"Zeus and Roxanne (1997)"];
+/*initiate the autocomplete function on the "myInput" element, and pass along the countries array as possible autocomplete values:*/
+autocomplete(document.getElementById("myInput"), countries);
+</script>
+
+<script type="text/javascript">// <![CDATA[
+        function loading(){
+            $("#loading").show();
+            $("#content").hide();       
+        }
+// ]]></script>
+
+</body>
+</head>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
